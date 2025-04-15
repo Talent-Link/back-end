@@ -1,7 +1,8 @@
 import { Router } from "express";
 import {
   createForm,
-  getForms
+  getForms,
+  deleteForm
 
 } from "../controllers/formController";
 import { ensureToken, onlyRH } from "../middlewares/jwtAuth";
@@ -13,5 +14,6 @@ router.use(ensureToken, onlyRH);
 
 router.post("/", createForm);
 router.get("/", getForms);
+router.delete("/:id", deleteForm);
 
 export default router;
