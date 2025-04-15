@@ -11,23 +11,25 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL: "/auth/google/callback",
-      passReqToCallback: true, // permite acessar req na callback
+      passReqToCallback: true,
     },
     async (req: Request, accessToken, refreshToken, profile, done) => {
       try {
-        const userType = req.session.userType;
+        // Recupera o tipo de usuário da sessão
+        const userType = (req.session as any).userType;
+
         console.log("Tipo de usuário no callback do Google:", userType);
 
         if (!userType) {
           return done(new Error("Tipo de usuário não especificado."), false);
         }
 
-        // Verifica se o usuário já existe
+        // Busca o usuário no banco
         let user = await prisma.user.findUnique({
           where: { email: profile.emails?.[0].value },
         });
 
-        // Cria se não existir
+        // Se não existe, cria novo
         if (!user) {
           user = await prisma.user.create({
             data: {
@@ -47,11 +49,12 @@ passport.use(
     }
   )
 );
-
+// Serializa apenas o ID
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
+// Desserializa o usuário a partir do ID
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await prisma.user.findUnique({ where: { id } });

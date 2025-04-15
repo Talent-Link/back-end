@@ -8,6 +8,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src/types/espression.d.ts", "src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*"]
 }
