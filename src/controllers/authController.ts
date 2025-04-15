@@ -1,51 +1,94 @@
+// src/controllers/authController.ts
+
 import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
+const JWT_SECRET = process.env.JWT_SECRET!; // defina JWT_SECRET no seu .env
 
-// Inicia o login com o Google e salva o tipo de usuário na sessão
-export function loginWithGoogle(req: Request, res: Response, next: NextFunction): void {
+/**
+ * Inicia o login com o Google e salva o tipo de usuário na sessão
+ */
+export function loginWithGoogle(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
   const userType = req.params.userType?.toUpperCase();
 
   if (userType !== "RH" && userType !== "CANDIDATO") {
     console.log("Tipo de usuário inválido recebido:", userType);
     res.status(400).send("Tipo de usuário inválido.");
-    return; // Garante que a execução pare aqui
+    return;
   }
 
-  // Ignorando a tipagem para salvar o userType na sessão
-  (req.session as any).userType = userType;
+  // Salva o tipo de usuário na sessão
+  req.session.userType = userType;
   console.log("Sessão após definir userType:", req.session);
 
   req.session.save((err) => {
     if (err) {
       console.error("Erro ao salvar a sessão:", err);
       res.status(500).send("Erro ao salvar a sessão.");
-      return; // Garante que a execução pare aqui
+      return;
     }
-    next(); // Continua para o próximo middleware
+    next(); // Continua para o passport.authenticate
   });
 }
 
-// Callback do Google após login
-export function handleGoogleCallback(req: Request, res: Response) {
-  console.log("Sessão no callback do Google:", req.session);
-  res.send("Login bem-sucedido!");
+/**
+ * Callback do Google após login
+ * Gera um JWT e retorna para o cliente
+ */
+export function handleGoogleCallback(req: Request, res: Response): void {
+  const user = req.user as any;
+  if (!user) {
+    res.status(401).send("Usuário não autenticado.");
+    return;
+  }
+
+  // Cria payload e assina token
+  const payload = {
+    sub: user.id,
+    userType: user.userType,
+  };
+
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+
+  // Envia token e dados do usuário
+  res.json({
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      userType: user.userType,
+      name: user.name,
+      photoUrl: user.photoUrl,
+    },
+  });
 }
 
-// Logout
-export function logout(req: Request, res: Response) {
+/**
+ * Logout do usuário
+ */
+export function logout(req: Request, res: Response): void {
   req.logout((err) => {
     if (err) {
-      return res.status(500).send("Erro ao fazer logout.");
+      console.error("Erro ao fazer logout:", err);
+      res.status(500).send("Erro ao fazer logout.");
+      return;
     }
-    res.send("Logout bem-sucedido!");
+    res.send("Logout bem‑sucedido!");
   });
 }
-// Retorna os dados do usuário autenticado  
-export function getCurrentUser(req: Request, res: Response): void {  
-    if (!req.user) {  
-      res.status(401).send("Usuário não autenticado.");  
-      return; // Garante que a execução pare aqui  
-    }  
-    
-    res.json(req.user);  
+
+/**
+ * Retorna os dados do usuário autenticado
+ */
+export function getCurrentUser(req: Request, res: Response): void {
+  const user = req.user as any;
+  if (!user) {
+    res.status(401).send("Usuário não autenticado.");
+    return;
   }
+  res.json(user);
+}

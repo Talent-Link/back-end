@@ -1,40 +1,47 @@
+// src/app.ts
 import express from "express";
 import session from "express-session";
-import passport from "./config/passport"; // Importa o arquivo passport.ts
+import passport from "./config/passport";
+import dotenv from "dotenv";
 import { requestLogger } from "./middlewares/requestLogger";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
-import dotenv from "dotenv";
+import formRouter from "./routes/formRoutes";
 
-// Carregar variáveis de ambiente
 dotenv.config();
 
 const app = express();
 
-// Middleware para log de requisições
+// Log de todas as requisições
 app.use(requestLogger);
 
-// Configuração de sessão
+// Parse de JSON no body
+app.use(express.json());
+
+// Configuração de sessão (usada só para o fluxo OAuth)
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
     cookie: {
-      secure: false, // Use `true` em produção com HTTPS
-      httpOnly: true, // Impede acesso ao cookie via JavaScript no navegador
+      secure: false,   // true em produção com HTTPS
+      httpOnly: true,  // impede acesso via JS no browser
     },
   })
 );
 
-// Inicialização do Passport
+// Inicializa o Passport (Google OAuth)
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Rotas de autenticação
+// Rotas de autenticação (login Google, callback, logout, /me)
 app.use("/auth", authRoutes);
 
-// Middleware de manipulação de erros
+// Rotas de formulário (CRUD de Form), protegidas via JWT e onlyRH
+app.use("/forms", formRouter);
+
+// Middleware centralizado de tratamento de erros
 app.use(errorHandler);
 
 export default app;

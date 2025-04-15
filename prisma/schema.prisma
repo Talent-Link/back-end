@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserType {
+  RH
+  CANDIDATO
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -14,9 +19,21 @@ model User {
   photoUrl  String?
   userType  UserType
   createdAt DateTime @default(now())
+
+  // relação inversa para Form
+  forms Form[] @relation("UserForms")
 }
 
-enum UserType {
-  RH
-  CANDIDATO
+model Form {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  questions   Json
+  recruiterId String
+
+  // relação para User, referenciando recruiterId
+  recruiter User @relation("UserForms", fields: [recruiterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
