@@ -124,6 +124,108 @@ export async function getForms(req: Request, res: Response): Promise<void> {
   }
 }
 
+export async function updateForm(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params; // ID do formulário a ser editado
+    const { title, description, questions } = req.body; // Dados para atualização
+    const user = req.user as any; // Usuário autenticado
+
+    if (!user) {
+      res.status(401).send("Usuário não autenticado.");
+      return;
+    }
+
+    // Verifica se o usuário é um RH
+    if (user.userType !== "RH") {
+      res
+        .status(403)
+        .send("Acesso negado. Apenas RHs podem editar formulários.");
+      return;
+    }
+
+    // Busca o formulário no banco de dados
+    const form = await prisma.form.findUnique({
+      where: { id },
+    });
+
+    if (!form) {
+      res.status(404).send("Formulário não encontrado.");
+      return;
+    }
+
+    // Verifica se o formulário pertence ao RH autenticado
+    if (form.recruiterId !== user.id) {
+      res
+        .status(403)
+        .send("Você não tem permissão para editar este formulário.");
+      return;
+    }
+
+    // Validações básicas
+    if (title && (typeof title !== "string" || title.trim() === "")) {
+      res.status(400).send("Título inválido.");
+      return;
+    }
+    if (description && typeof description !== "string") {
+      res.status(400).send("Descrição inválida.");
+      return;
+    }
+    if (questions) {
+      if (!Array.isArray(questions) || questions.length === 0) {
+        res.status(400).send("Questions deve ser um array não vazio.");
+        return;
+      }
+
+      // Valida cada questão
+      for (const q of questions) {
+        if (typeof q.type !== "string" || typeof q.text !== "string") {
+          res
+            .status(400)
+            .send("Cada questão precisa ter 'type' e 'text' válidos.");
+          return;
+        }
+        if (q.type === "MULTIPLE_CHOICE") {
+          if (
+            !Array.isArray((q as any).options) ||
+            (q as any).options.length < 2
+          ) {
+            res
+              .status(400)
+              .send(
+                "MULTIPLE_CHOICE precisa de um array 'options' com pelo menos 2 itens."
+              );
+            return;
+          }
+          for (const opt of (q as any).options) {
+            if (typeof opt !== "string" || opt.trim() === "") {
+              res.status(400).send("Cada opção deve ser uma string não vazia.");
+              return;
+            }
+          }
+        } else if (q.type !== "OPEN_TEXT") {
+          res.status(400).send(`Tipo de questão inválido: ${q.type}`);
+          return;
+        }
+      }
+    }
+
+    // Atualiza o formulário no banco de dados
+    const updatedForm = await prisma.form.update({
+      where: { id },
+      data: {
+        title: title || form.title,
+        description: description || form.description,
+        questions: questions || form.questions,
+      },
+    });
+
+    res.status(200).json(updatedForm);
+  } catch (error) {
+    console.error("Erro ao editar formulário:", error);
+    res.status(500).send("Erro interno ao editar formulário.");
+  }
+}
+
 export async function deleteForm(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params; // ID do formulário a ser deletado
