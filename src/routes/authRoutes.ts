@@ -1,15 +1,16 @@
 import { Router } from "express";
 import passport from "passport";
 import {
-  loginWithGoogle,
   handleGoogleCallback,
   logout,
   getCurrentUser,
 } from "../controllers/authController";
+import { validateUserType } from "../middlewares/validationMiddleware";
+import { isAuthenticated } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-// Rota de callback do Google — precisa vir antes da rota com parâmetro
+// Rota de callback do Google
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
@@ -19,7 +20,7 @@ router.get(
 // Rota para iniciar login com Google e armazenar o tipo de usuário na sessão
 router.get(
   "/google/:userType",
-  loginWithGoogle,
+  validateUserType,
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
@@ -27,6 +28,6 @@ router.get(
 router.get("/logout", logout);
 
 // Rota para obter os dados do usuário autenticado
-router.get("/me", getCurrentUser);
+router.get("/me", isAuthenticated, getCurrentUser);
 
 export default router;

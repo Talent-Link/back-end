@@ -49,7 +49,8 @@ passport.use(
     }
   )
 );
-// Serializa apenas o ID
+
+// Serializa apenas o ID do usuário
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
