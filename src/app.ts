@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes";
 import formRouter from "./routes/formRoutes";
 import responseFormRouter from "./routes/responseFormRouter"; // Importa as rotas de respostas
 import talentRoutes from "./routes/talentRouter"; // Importa as rotas do Banco de Talentos
+import reportRoutes from "./routes/reportRoutes"; // Importa as rotas de relatórios
 
 dotenv.config();
 
@@ -46,6 +47,8 @@ app.use("/forms", formRouter);
 app.use("/candidate", responseFormRouter); // Registra as rotas de respostas
 
 app.use("/talents", talentRoutes); // Rotas do Banco de Talentos
+
+app.use("/reports", reportRoutes); // Rotas de relatórios
 
 // Middleware centralizado de tratamento de erros
 app.use(errorHandler);
