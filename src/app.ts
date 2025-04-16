@@ -1,4 +1,3 @@
-// src/app.ts
 import express from "express";
 import session from "express-session";
 import passport from "./config/passport";
@@ -7,6 +6,7 @@ import { requestLogger } from "./middlewares/requestLogger";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
 import formRouter from "./routes/formRoutes";
+import responseFormRouter from "./routes/responseFormRouter"; // Importa as rotas de respostas
 
 dotenv.config();
 
@@ -40,6 +40,9 @@ app.use("/auth", authRoutes);
 
 // Rotas de formulário (CRUD de Form), protegidas via JWT e onlyRH
 app.use("/forms", formRouter);
+
+// Rotas de respostas (candidato responde e RH visualiza)
+app.use("/candidate", responseFormRouter); // Registra as rotas de respostas
 
 // Middleware centralizado de tratamento de erros
 app.use(errorHandler);

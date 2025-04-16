@@ -20,8 +20,11 @@ model User {
   userType  UserType
   createdAt DateTime @default(now())
 
-  // relação inversa para Form
+  // Relação inversa para Form (RH cria formulários)
   forms Form[] @relation("UserForms")
+
+  // Relação inversa para Response (Candidato responde formulários)
+  responses Response[]
 }
 
 model Form {
@@ -31,9 +34,26 @@ model Form {
   questions   Json
   recruiterId String
 
-  // relação para User, referenciando recruiterId
+  // Relação para User, referenciando recruiterId
   recruiter User @relation("UserForms", fields: [recruiterId], references: [id])
+
+  // Relação inversa para Response (Respostas dos candidatos)
+  responses Response[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Response {
+  id          String   @id @default(cuid())
+  candidateId String   // ID do candidato que respondeu
+  formId      String   // ID do formulário respondido
+  answers     Json     // Respostas do candidato (em formato JSON)
+  createdAt   DateTime @default(now())
+
+  // Relação para User (Candidato que respondeu)
+  candidate User @relation(fields: [candidateId], references: [id])
+
+  // Relação para Form (Formulário respondido)
+  form Form @relation(fields: [formId], references: [id])
 }
