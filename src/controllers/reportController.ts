@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { fetchGeminiResponse } from "../services/geminiService"; // Importa a função para chamar a API do Gemini
+import { fetchGeminiResponse } from "../services/geminiService";
 
 const prisma = new PrismaClient();
 
-// Gera um relatório para um candidato específico com base em um formulário
 export async function generateCandidateReport(req: Request, res: Response): Promise<void> {
   try {
     const { candidateId, formId } = req.params;
@@ -34,22 +33,46 @@ export async function generateCandidateReport(req: Request, res: Response): Prom
       return;
     }
 
-    // Prepara o prompt para a API do Gemini
+    // Prompt para a API do Gemini
     const prompt = `
-      Resumo do candidato ${candidate.name} para o formulário "${response.form.title}".
-      Descrição do formulário: ${response.form.description}.
-      Respostas do candidato: ${JSON.stringify(response.answers)}.
-      Avalie se o candidato se encaixa na vaga e forneça um resumo simples.
+    **Resumo do Candidato:**
+    Nome: ${candidate.name}
+    E-mail: ${candidate.email}
+
+    **Formulário:**
+    Título: ${response.form.title}
+    Descrição: ${response.form.description || "Descrição não fornecida"}
+    Objetivo: Avaliar a adequação do candidato à vaga descrita no formulário.
+
+    **Respostas do Candidato:**
+    ${
+      typeof response.answers === "object" && response.answers !== null
+        ? Object.entries(response.answers)
+            .map(([question, answer]) => `- ${question}: ${answer}`)
+            .join("\n")
+        : "Respostas não disponíveis"
+    }
+
+    **Contexto da Vaga:**
+    Com base no título e na descrição do formulário, identifique a área da vaga (exemplo: tecnologia, marketing, vendas, etc.) e os requisitos implícitos ou explícitos para o candidato.
+
+    **Tarefa:**
+    1. Avalie as respostas do candidato em relação à vaga descrita no formulário.
+    2. Identifique os pontos fortes e fracos do candidato com base nas respostas fornecidas.
+    3. Forneça um resumo detalhado sobre a adequação do candidato à vaga, destacando se ele atende aos requisitos e se possui as habilidades necessárias.
+    4. Caso as informações sejam insuficientes, indique quais informações adicionais seriam necessárias para uma avaliação mais completa.
     `;
 
     // Chama a API do Gemini para gerar o relatório
-    const report = await fetchGeminiResponse(prompt);
+    const rawReport = await fetchGeminiResponse(prompt);
 
-    // Retorna o relatório gerado
+    // Processa o relatório para separá-lo em seções
+    const structuredReport = processReport(rawReport);
+
+    // Retorna o relatório estruturado
     res.status(200).json({
-        
       message: "Relatório gerado com sucesso.",
-      report,
+      report: structuredReport,
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -59,4 +82,19 @@ export async function generateCandidateReport(req: Request, res: Response): Prom
     }
     res.status(500).send("Erro interno ao gerar relatório.");
   }
+}
+
+// Função para processar o relatório e separá-lo em seções
+function processReport(rawReport: string): Record<string, string> {
+  const sections = rawReport.split("\n\n"); // Divide o texto em seções com base em quebras de linha duplas
+  const structuredReport: Record<string, string> = {};
+
+  sections.forEach((section) => {
+    const [title, ...content] = section.split("\n"); // Separa o título do conteúdo
+    if (title && content.length > 0) {
+      structuredReport[title.replace(/##\s*/, "").trim()] = content.join("\n").trim(); // Remove "##" do título e adiciona ao JSON
+    }
+  });
+
+  return structuredReport;
 }
