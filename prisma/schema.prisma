@@ -25,6 +25,8 @@ model User {
 
   // Relação inversa para Response (Candidato responde formulários)
   responses Response[]
+
+  feeedbacks Feedback[] // Respostas de feedbacks
 }
 
 model Form {
@@ -56,4 +58,13 @@ model Response {
 
   // Relação para Form (Formulário respondido)
   form Form @relation(fields: [formId], references: [id])
+}
+
+model Feedback {
+  id          String   @id @default(cuid())
+  candidate   User     @relation(fields: [candidateId], references: [id])
+  candidateId String
+  subject     String
+  message     String
+  createdAt   DateTime @default(now())
 }

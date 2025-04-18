@@ -6,9 +6,10 @@ import { requestLogger } from "./middlewares/requestLogger";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
 import formRouter from "./routes/formRoutes";
-import responseFormRouter from "./routes/responseFormRouter"; // Importa as rotas de respostas
-import talentRoutes from "./routes/talentRouter"; // Importa as rotas do Banco de Talentos
-import reportRoutes from "./routes/reportRoutes"; // Importa as rotas de relatórios
+import responseFormRouter from "./routes/responseFormRouter"; 
+import talentRoutes from "./routes/talentRouter";
+import reportRoutes from "./routes/reportRoutes";
+import feedbackRouter from "./routes/feedbackRouter"; // Importa o router de feedback
 
 dotenv.config();
 
@@ -49,6 +50,8 @@ app.use("/candidate", responseFormRouter); // Registra as rotas de respostas
 app.use("/talents", talentRoutes); // Rotas do Banco de Talentos
 
 app.use("/reports", reportRoutes); // Rotas de relatórios
+
+app.use("/feedback", feedbackRouter); // Rotas de feedback
 
 // Middleware centralizado de tratamento de erros
 app.use(errorHandler);
