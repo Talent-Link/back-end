@@ -1,0 +1,293 @@
+openapi: 3.0.0
+info:
+  title: TalentLink API
+  version: 1.0.0
+tags:
+  - name: Autenticacao
+  - name: Formulario
+  - name: Feedback
+  - name: Candidatos
+  - name: Relatorios
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Autenticacao
+      summary: Registra um novo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                userType:
+                  type: string
+      responses:
+        "201":
+          description: Usuario criado com sucesso
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticacao
+      summary: Realiza login e retorna token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Login bem-sucedido
+
+  /auth/google:
+    post:
+      tags:
+        - Autenticacao
+      summary: Login com Google (candidato ou RH)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        "200":
+          description: Login com Google bem-sucedido
+
+  /form:
+    post:
+      tags:
+        - Formulario
+      summary: Cria um novo formulario (apenas RH)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                questions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum: [MULTIPLE_CHOICE, OPEN_TEXT]
+                      text:
+                        type: string
+                      options:
+                        type: array
+                        items:
+                          type: string
+      responses:
+        "201":
+          description: Formulario criado com sucesso
+
+  /form:
+    get:
+      tags:
+        - Formulario
+      summary: Lista todos os formularios do RH logado
+      responses:
+        "200":
+          description: Lista de formularios retornada com sucesso
+
+  /form/{formId}:
+    get:
+      tags:
+        - Formulario
+      summary: Retorna os detalhes de um formulario especifico
+      parameters:
+        - in: path
+          name: formId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Detalhes do formulario
+
+    put:
+      tags:
+        - Formulario
+      summary: Atualiza um formulario existente
+      parameters:
+        - in: path
+          name: formId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                questions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum: [MULTIPLE_CHOICE, OPEN_TEXT]
+                      text:
+                        type: string
+                      options:
+                        type: array
+                        items:
+                          type: string
+      responses:
+        "200":
+          description: Formulario atualizado com sucesso
+
+  /form/submit:
+    post:
+      tags:
+        - Formulario
+      summary: Submete respostas ao formulario (apenas candidatos)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                formId:
+                  type: string
+                answers:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        "201":
+          description: Respostas submetidas com sucesso
+
+  /form/responses/{formId}:
+    get:
+      tags:
+        - Formulario
+      summary: Retorna respostas de um formulario (apenas RH)
+      parameters:
+        - in: path
+          name: formId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Respostas retornadas com sucesso
+
+  /candidates:
+    get:
+      tags:
+        - Candidatos
+      summary: Retorna todos os candidatos
+      responses:
+        "200":
+          description: Lista de candidatos retornada com sucesso
+
+  /candidates/{id}:
+    get:
+      tags:
+        - Candidatos
+      summary: Retorna detalhes de um candidato especifico
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Detalhes do candidato retornados com sucesso
+
+  /feedback/{candidateId}:
+    post:
+      tags:
+        - Feedback
+      summary: Envia um feedback para um candidato
+      parameters:
+        - in: path
+          name: candidateId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                message:
+                  type: string
+                automatic:
+                  type: boolean
+      responses:
+        "200":
+          description: Feedback enviado com sucesso
+
+  /feedback/history/{candidateId}:
+    get:
+      tags:
+        - Feedback
+      summary: Retorna o historico de feedbacks de um candidato
+      parameters:
+        - in: path
+          name: candidateId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Historico de feedbacks retornado com sucesso
+
+  /report/{candidateId}/{formId}:
+    get:
+      tags:
+        - Relatorios
+      summary: Gera um relatorio de um candidato com base em suas respostas
+      parameters:
+        - in: path
+          name: candidateId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: formId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Relatorio gerado com sucesso
