@@ -11,6 +11,7 @@ import talentRoutes from "./routes/talentRouter";
 import reportRoutes from "./routes/reportRoutes";
 import feedbackRouter from "./routes/feedbackRouter"; // Importa o router de feedback
 import companyRouter from "./routes/companyRouter"; // Importa o router de empresa
+import opportunityRoutes from "./routes/oportunityRoutes";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./docs/swagger";
 import YAML from 'yamljs';
@@ -62,6 +63,7 @@ app.use("/feedback", feedbackRouter); // Rotas de feedback
 
 app.use("/empresa", companyRouter); // Rotas de empresa
 
+app.use("/opportunities", opportunityRoutes);
 // Middleware centralizado de tratamento de erros
 app.use(errorHandler);
 

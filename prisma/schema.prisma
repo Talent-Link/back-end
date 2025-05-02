@@ -26,23 +26,28 @@ model User {
   // Relação inversa para Response (Candidato responde formulários)
   responses Response[]
 
-  feeedbacks Feedback[] // Respostas de feedbacks
-    company   Company? // <- adiciona essa linha
+  // Relação inversa para Feedbacks
+  feeedbacks Feedback[]
+
+  // Relação inversa para Company (RH gerencia uma empresa)
+  company Company?
 }
 
 model Company {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   name        String
   description String?
   address     String
-  recruiterId String   @unique
-  recruiter   User     @relation(fields: [recruiterId], references: [id])
-  createdAt   DateTime @default(now())
+  recruiterId String         @unique
+  recruiter   User           @relation(fields: [recruiterId], references: [id])
+  createdAt   DateTime       @default(now())
+
+  // Relação para oportunidades criadas pela empresa
+  opportunities Opportunity[]
 }
 
-
 model Form {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
   questions   Json
@@ -55,21 +60,23 @@ model Form {
   responses Response[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Relação inversa para Opportunity (Oportunidades que utilizam este formulário)
+  opportunities Opportunity[]
 }
 
 model Response {
-  id          String   @id @default(cuid())
-  candidateId String   // ID do candidato que respondeu
-  formId      String   // ID do formulário respondido
-  answers     Json     // Respostas do candidato (em formato JSON)
-  createdAt   DateTime @default(now())
+  id            String       @id @default(cuid())
+  candidateId   String
+  formId        String
+  opportunityId String?      // Temporariamente opcional
+  answers       Json
+  createdAt     DateTime     @default(now())
 
-  // Relação para User (Candidato que respondeu)
-  candidate User @relation(fields: [candidateId], references: [id])
-
-  // Relação para Form (Formulário respondido)
-  form Form @relation(fields: [formId], references: [id])
+  candidate     User         @relation(fields: [candidateId], references: [id])
+  form          Form         @relation(fields: [formId], references: [id])
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
 }
 
 model Feedback {
@@ -79,4 +86,19 @@ model Feedback {
   subject     String
   message     String
   createdAt   DateTime @default(now())
+}
+
+model Opportunity {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  location    String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  formId      String?
+  form        Form?    @relation(fields: [formId], references: [id])
+  createdAt   DateTime @default(now())
+
+  // Relação inversa para Response (Respostas associadas à oportunidade)
+  responses   Response[]
 }

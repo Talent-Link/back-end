@@ -6,36 +6,40 @@ const prisma = new PrismaClient();
 // Candidato responde ao formulário
 export async function submitResponse(req: Request, res: Response): Promise<void> {
   try {
-    const { formId, answers } = req.body;
-    const user = req.user as any; // Usuário autenticado
+    const { formId, opportunityId, answers } = req.body;
+    const user = req.user as any;
 
     if (!user) {
       res.status(401).send("Usuário não autenticado.");
       return;
     }
 
-    // Verifica se o usuário é um candidato
     if (user.userType !== "CANDIDATO") {
       res.status(403).send("Acesso negado. Apenas candidatos podem responder formulários.");
       return;
     }
 
-    // Verifica se o formulário existe
-    const form = await prisma.form.findUnique({
-      where: { id: formId },
+    const opportunity = await prisma.opportunity.findUnique({
+      where: { id: opportunityId },
+      include: { form: true },
     });
 
-    if (!form) {
-      res.status(404).send("Formulário não encontrado.");
+    if (!opportunity) {
+      res.status(404).send("Oportunidade não encontrada.");
       return;
     }
 
-    // Salva as respostas no banco de dados
+    if (opportunity.formId !== formId) {
+      res.status(400).send("Formulário não corresponde à oportunidade.");
+      return;
+    }
+
     const response = await prisma.response.create({
       data: {
         candidateId: user.id,
         formId,
-        answers, // Respostas enviadas pelo candidato
+        opportunityId,
+        answers,
       },
     });
 
@@ -50,20 +54,18 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
 export async function getResponses(req: Request, res: Response): Promise<void> {
   try {
     const { formId } = req.params;
-    const user = req.user as any; // Usuário autenticado
+    const user = req.user as any;
 
     if (!user) {
       res.status(401).send("Usuário não autenticado.");
       return;
     }
 
-    // Verifica se o usuário é um RH
     if (user.userType !== "RH") {
       res.status(403).send("Acesso negado. Apenas RHs podem visualizar respostas.");
       return;
     }
 
-    // Verifica se o formulário existe e pertence ao RH
     const form = await prisma.form.findUnique({
       where: { id: formId },
     });
@@ -73,7 +75,6 @@ export async function getResponses(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Busca as respostas associadas ao formulário
     const responses = await prisma.response.findMany({
       where: { formId },
       include: {

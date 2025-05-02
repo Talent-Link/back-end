@@ -8,6 +8,6 @@ const router = Router();
 router.use(ensureToken, onlyRH);
 
 // Gera um relatório para um candidato específico com base em um formulário
-router.get("/:candidateId/:formId", generateCandidateReport);
+router.get("/:candidateId/:opportunityId", generateCandidateReport);
 
 export default router;
