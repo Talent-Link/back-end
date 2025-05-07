@@ -1,11 +1,14 @@
-// src/routes/feedbackRouter.ts
 import { Router } from "express";
-import { sendFeedback, getFeedbackHistory } from "../controllers/feedbackController";
+import { sendNotification, getNotifications} from "../controllers/feedbackController";
+import { ensureToken } from "../middlewares/jwtAuth";
 
 const router = Router();
 
-// Aqui o path é só "/:candidateId", porque já está montado em "/feedback"
-router.post("/:candidateId", sendFeedback);
-router.get("/:candidateId", getFeedbackHistory);
+// POST /notifications/send → envia uma notificação para um usuário
+router.post("/send", ensureToken, sendNotification);
+
+// GET /notifications → retorna todas as notificações do usuário logado
+router.get("/", ensureToken, getNotifications);
+
 
 export default router;

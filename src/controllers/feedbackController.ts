@@ -4,79 +4,73 @@ import nodemailer from "nodemailer";
 
 const prisma = new PrismaClient();
 
-// Configuração do Nodemailer
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // Coloque no .env
+    user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-export async function sendFeedback(req: Request, res: Response): Promise<void> {
+export async function sendNotification(req: Request, res: Response): Promise<void> {
   try {
-    const { candidateId } = req.params;
-    const { subject, message, automatic } = req.body;
+    const { userId, type, title, message, sendEmail } = req.body;
 
-    const candidate = await prisma.user.findUnique({
-      where: { id: candidateId },
-    });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
 
-    if (!candidate || candidate.userType !== "CANDIDATO") {
-      res.status(404).json({ error: "Candidato não encontrado." });
+    if (!user) {
+      res.status(404).json({ error: "Usuário não encontrado." });
       return;
     }
 
-    // Mensagem automática padrão
-    const autoMessages: Record<string, string> = {
-      aprovado: "Parabéns! Você foi aprovado para a próxima etapa.",
-      reprovado: "Agradecemos seu interesse, mas você não foi selecionado.",
-      andamento: "Seu processo seletivo está em andamento. Entraremos em contato em breve.",
-    };
-
-    const emailMessage = automatic ? autoMessages[message] : message;
-
-    if (!emailMessage) {
-      res.status(400).json({ error: "Mensagem inválida." });
-      return;
+    if (sendEmail) {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: title || "Nova Notificação",
+        text: message,
+      });
     }
 
-    // Envia o email
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: candidate.email,
-      subject: subject || "Atualização sobre sua candidatura",
-      text: emailMessage,
-    });
-
-    // Salva o feedback no banco
-    await prisma.feedback.create({
+    const notification = await prisma.notification.create({
       data: {
-        candidateId,
-        message: emailMessage,
-        subject: subject || "Atualização sobre sua candidatura",
+        userId,
+        type,
+        title: title || "Nova Notificação",
+        message,
+        read: false,
       },
     });
 
-    res.status(200).json({ message: "Feedback enviado com sucesso." });
+    res.status(200).json({ message: "Notificação enviada com sucesso.", notification });
   } catch (error) {
-    console.error("Erro ao enviar feedback:", error);
-    res.status(500).json({ error: "Erro ao enviar feedback." });
+    console.error("Erro ao enviar notificação:", error);
+    res.status(500).json({ error: "Erro ao enviar notificação." });
   }
 }
 
-export async function getFeedbackHistory(req: Request, res: Response): Promise<void> {
+export async function getNotifications(req: Request, res: Response): Promise<void> {
   try {
-    const { candidateId } = req.params;
+    const user = req.user as any;
 
-    const feedbacks = await prisma.feedback.findMany({
-      where: { candidateId },
+    if (!user) {
+      res.status(401).json({ message: "Usuário não autenticado." });
+      return;
+    }
+
+    const notifications = await prisma.notification.findMany({
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
 
-    res.status(200).json({ feedbacks });
+    if (notifications.length === 0) {
+      res.status(200).json({ notifications: [] });
+      return;
+    }
+
+    res.status(200).json({ notifications });
   } catch (error) {
-    console.error("Erro ao buscar histórico de feedbacks:", error);
-    res.status(500).json({ error: "Erro ao buscar histórico." });
+    console.error("Erro ao buscar notificações:", error);
+    res.status(500).json({ error: "Erro ao buscar notificações." });
   }
 }

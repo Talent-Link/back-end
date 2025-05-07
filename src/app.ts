@@ -59,8 +59,7 @@ app.use("/talents", talentRoutes); // Rotas do Banco de Talentos
 
 app.use("/reports", reportRoutes); // Rotas de relatórios
 
-app.use("/feedback", feedbackRouter); // Rotas de feedback
-
+app.use("/notifications", feedbackRouter);
 app.use("/empresa", companyRouter); // Rotas de empresa
 
 app.use("/opportunities", opportunityRoutes);

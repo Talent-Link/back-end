@@ -26,11 +26,11 @@ model User {
   // Relação inversa para Response (Candidato responde formulários)
   responses Response[]
 
-  // Relação inversa para Feedbacks
-  feeedbacks Feedback[]
-
   // Relação inversa para Company (RH gerencia uma empresa)
   company Company?
+
+  // Relação inversa para Notification (Notificações associadas ao usuário)
+  notifications Notification[]
 }
 
 model Company {
@@ -75,14 +75,23 @@ model Response {
   opportunity   Opportunity  @relation(fields: [opportunityId], references: [id])
 }
 
-model Feedback {
+model Notification {
   id          String   @id @default(cuid())
-  candidate   User     @relation(fields: [candidateId], references: [id])
-  candidateId String
-  subject     String
+  userId      String
+  type        NotificationType // Tipo da notificação (FEEDBACK, GENERAL)
+  title       String
   message     String
+  read        Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
 }
+
+enum NotificationType {
+  FEEDBACK
+  GENERAL
+}
+
 
 model Opportunity {
   id          String   @id @default(cuid())
