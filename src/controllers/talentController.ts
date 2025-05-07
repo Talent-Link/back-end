@@ -30,7 +30,11 @@ export async function getCandidateById(req: Request, res: Response): Promise<voi
       include: {
         responses: {
           include: {
-            form: true, // Inclui os formulários associados às respostas
+            opportunity: {
+              include: {
+                form: true,
+              },
+            },
           },
         },
       },

@@ -56,8 +56,6 @@ model Form {
   // Relação para User, referenciando recruiterId
   recruiter User @relation("UserForms", fields: [recruiterId], references: [id])
 
-  // Relação inversa para Response (Respostas dos candidatos)
-  responses Response[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -69,14 +67,12 @@ model Form {
 model Response {
   id            String       @id @default(cuid())
   candidateId   String
-  formId        String
-  opportunityId String?      // Temporariamente opcional
+  opportunityId String
   answers       Json
   createdAt     DateTime     @default(now())
 
   candidate     User         @relation(fields: [candidateId], references: [id])
-  form          Form         @relation(fields: [formId], references: [id])
-  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+  opportunity   Opportunity  @relation(fields: [opportunityId], references: [id])
 }
 
 model Feedback {

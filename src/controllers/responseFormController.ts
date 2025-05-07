@@ -3,10 +3,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Candidato responde ao formulário
 export async function submitResponse(req: Request, res: Response): Promise<void> {
   try {
-    const { formId, opportunityId, answers } = req.body;
+    const { opportunityId, answers } = req.body;
     const user = req.user as any;
 
     if (!user) {
@@ -19,9 +18,10 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
       return;
     }
 
+    // Busca a oportunidade e garante que existe e tem formId
     const opportunity = await prisma.opportunity.findUnique({
       where: { id: opportunityId },
-      include: { form: true },
+      select: { id: true, formId: true },
     });
 
     if (!opportunity) {
@@ -29,16 +29,15 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
       return;
     }
 
-    if (opportunity.formId !== formId) {
-      res.status(400).send("Formulário não corresponde à oportunidade.");
+    if (!opportunity.formId) {
+      res.status(400).send("Oportunidade não possui formulário associado.");
       return;
     }
 
     const response = await prisma.response.create({
       data: {
-        candidateId: user.id,
-        formId,
-        opportunityId,
+        candidate: { connect: { id: user.id } },
+        opportunity: { connect: { id: opportunityId } },
         answers,
       },
     });
@@ -50,7 +49,6 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
   }
 }
 
-// RH visualiza respostas de um formulário
 export async function getResponses(req: Request, res: Response): Promise<void> {
   try {
     const { formId } = req.params;
@@ -75,8 +73,17 @@ export async function getResponses(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const responses = await prisma.response.findMany({
+    // Busca todas as oportunidades que usam esse formulário
+    const opportunities = await prisma.opportunity.findMany({
       where: { formId },
+      select: { id: true },
+    });
+
+    const opportunityIds = opportunities.map(o => o.id);
+
+    // Busca todas as respostas dessas oportunidades
+    const responses = await prisma.response.findMany({
+      where: { opportunityId: { in: opportunityIds } },
       include: {
         candidate: {
           select: { id: true, name: true, email: true },

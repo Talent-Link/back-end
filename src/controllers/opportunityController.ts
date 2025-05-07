@@ -190,7 +190,7 @@ export async function getResponsesByOpportunity(req: Request, res: Response): Pr
       where: { opportunityId },
       include: {
         candidate: { select: { id: true, name: true, email: true } },
-        form: { select: { id: true, title: true } },
+        // form: { select: { id: true, title: true } }, // Removed as 'form' is not part of the schema
       },
       orderBy: { createdAt: "desc" },
     });

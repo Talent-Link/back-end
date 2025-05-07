@@ -23,3 +23,4 @@ export async function generateCandidateReport(req: Request, res: Response): Prom
     );
   }
 }
+
