@@ -9,8 +9,8 @@ import formRouter from "./routes/formRoutes";
 import responseFormRouter from "./routes/responseFormRouter"; 
 import talentRoutes from "./routes/talentRouter";
 import reportRoutes from "./routes/reportRoutes";
-import feedbackRouter from "./routes/feedbackRouter"; // Importa o router de feedback
-import companyRouter from "./routes/companyRouter"; // Importa o router de empresa
+import feedbackRouter from "./routes/feedbackRouter"; 
+import companyRouter from "./routes/companyRouter"; 
 import opportunityRoutes from "./routes/oportunityRoutes";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./docs/swagger";

@@ -78,9 +78,11 @@ model Response {
 model Notification {
   id          String   @id @default(cuid())
   userId      String
-  type        NotificationType // Tipo da notificação (FEEDBACK, GENERAL)
+  type        NotificationType // "FEEDBACK" ou "GENERAL"
   title       String
   message     String
+  status      String?  // "approved", "rejected", "in-progress"
+  score       Int?     // Pontuação opcional (0-100)
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 
@@ -91,6 +93,7 @@ enum NotificationType {
   FEEDBACK
   GENERAL
 }
+
 
 
 model Opportunity {
