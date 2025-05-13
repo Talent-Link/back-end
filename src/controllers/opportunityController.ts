@@ -48,13 +48,15 @@ export async function getOpportunityById(
   }
 }
 
+// Função para criar oportunidade com campo de requisitos
 export async function createOpportunity(
   req: Request,
   res: Response
 ): Promise<void> {
   try {
     const user = req.user as any;
-    const { title, description, location, companyId, formId } = req.body;
+    const { title, description, location, companyId, formId, requirements } =
+      req.body;
 
     if (!user || user.userType !== "RH") {
       res.status(403).send("Apenas RH pode criar oportunidades.");
@@ -84,6 +86,10 @@ export async function createOpportunity(
     }
 
     const data: any = { title, description, location, companyId };
+
+    // Verificando e incluindo requisitos se existirem
+    if (requirements) data.requirements = requirements;
+
     if (formId) data.formId = formId;
 
     const opportunity = await prisma.opportunity.create({ data });
@@ -237,7 +243,9 @@ export async function withdrawApplication(
     if (response.candidateId !== user.id) {
       res
         .status(403)
-        .json({ message: "Você não tem permissão para retirar esta candidatura." });
+        .json({
+          message: "Você não tem permissão para retirar esta candidatura.",
+        });
       return;
     }
 
@@ -292,7 +300,9 @@ export async function getUserOpportunities(
     if (applications.length === 0) {
       res
         .status(404)
-        .json({ message: "Você ainda não se candidatou a nenhuma oportunidade." });
+        .json({
+          message: "Você ainda não se candidatou a nenhuma oportunidade.",
+        });
       return;
     }
 

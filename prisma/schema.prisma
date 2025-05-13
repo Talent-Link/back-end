@@ -102,6 +102,7 @@ model Opportunity {
   description String
   location    String
   companyId   String
+  requirements String?
   company     Company  @relation(fields: [companyId], references: [id])
   formId      String?
   form        Form?    @relation(fields: [formId], references: [id])
