@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_URL =
+  process.env.GROQ_API_URL || "https://api.groq.com/v1/generate-question";
 const prisma = new PrismaClient();
 
 type QuestionType = "MULTIPLE_CHOICE" | "OPEN_TEXT";
@@ -8,6 +10,11 @@ type QuestionType = "MULTIPLE_CHOICE" | "OPEN_TEXT";
 interface BaseQuestion {
   type: QuestionType;
   text: string;
+}
+
+interface GenerateQuestionRequest {
+  type: "MULTIPLE_CHOICE" | "OPEN_TEXT";
+  topic?: string;
 }
 
 interface MultipleChoiceQuestion extends BaseQuestion {

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getForms, createForm, deleteForm, updateForm } from "../controllers/formController";
+import { generateQuestionFromLocal } from "../controllers/formQuestionController";
 import { ensureToken, onlyRH } from "../middlewares/jwtAuth";
 
 const router = Router();
@@ -18,5 +19,9 @@ router.delete("/:id", deleteForm);
 
 // Rota para editar um formulário
 router.put("/:id", updateForm);
+
+
+// Rota para gerar uma questão com base nas questões locais (sem salvar no banco)
+router.post("/generate-local-question", generateQuestionFromLocal);
 
 export default router;
