@@ -89,3 +89,36 @@ export async function favoriteCandidate(req: Request, res: Response): Promise<vo
     res.status(500).send("Erro interno ao favoritar candidato.");
   }
 }
+
+// Função para desfavoritar um candidato
+export async function unfavoriteCandidate(req: Request, res: Response): Promise<void> {
+  try {
+    const user = req.user as any;
+    const { candidateId } = req.params;
+
+    if (!user || user.userType !== "RH") {
+      res.status(403).send("Apenas RH pode desfavoritar candidatos.");
+      return;
+    }
+
+    // Verifica se o candidato está no banco de talentos
+    const existingFavorite = await prisma.favoriteCandidate.findFirst({
+      where: { candidateId, recruiterId: user.id }
+    });
+
+    if (!existingFavorite) {
+      res.status(404).send("Candidato não encontrado no Banco de Talentos.");
+      return;
+    }
+
+    // Remove o candidato do banco de talentos
+    await prisma.favoriteCandidate.delete({
+      where: { id: existingFavorite.id }
+    });
+
+    res.status(200).send("Candidato removido do Banco de Talentos com sucesso.");
+  } catch (error) {
+    console.error("Erro ao desfavoritar candidato:", error);
+    res.status(500).send("Erro interno ao desfavoritar candidato.");
+  }
+}

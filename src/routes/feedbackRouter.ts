@@ -1,4 +1,3 @@
-// src/routes/notificationRoutes.ts
 import { Router } from "express";
 import {
   sendNotification,
@@ -10,18 +9,12 @@ import { ensureToken } from "../middlewares/jwtAuth";
 
 const router = Router();
 
-// 🔔 Notificações Gerais
-// Enviar notificação (geral)
+// Notificações
 router.post("/send", ensureToken, sendNotification);
-
-// Listar todas as notificações do usuário logado
 router.get("/", ensureToken, getNotifications);
 
-// ✅ Feedbacks
-// Enviar feedback para um usuário específico
+// Feedbacks
 router.post("/feedbacks/send", ensureToken, sendFeedback);
-
-// Listar todos os feedbacks do usuário logado
 router.get("/feedbacks", ensureToken, getUserFeedbacks);
 
 export default router;
