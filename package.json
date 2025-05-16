@@ -12,6 +12,7 @@
   "dependencies": {
     "@prisma/client": "^6.6.0",
     "axios": "^1.8.4",
+    "bcrypt": "^6.0.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
@@ -24,6 +25,7 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.1",
     "@types/express-session": "^1.18.1",
     "@types/jsonwebtoken": "^9.0.9",

@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { requestLogger } from "./middlewares/requestLogger";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
+import emailAuthRouter from "./routes/emailAuthRouter";
 import formRouter from "./routes/formRoutes";
 import responseFormRouter from "./routes/responseFormRouter";
 import talentRoutes from "./routes/talentRouter";
@@ -13,6 +14,7 @@ import feedbackRouter from "./routes/feedbackRouter";
 import companyRouter from "./routes/companyRouter";
 import opportunityRoutes from "./routes/oportunityRoutes";
 import bankTalentsRouter from "./routes/bankTalentsRouter";
+
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./docs/swagger";
 import YAML from "yamljs";
@@ -41,6 +43,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/auth", authRoutes);
+app.use("/auth/email", emailAuthRouter);
 app.use("/forms", formRouter);
 app.use("/candidate", responseFormRouter);
 app.use("/talents", talentRoutes);

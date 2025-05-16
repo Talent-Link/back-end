@@ -17,6 +17,7 @@ model User {
   email     String   @unique
   name      String?
   photoUrl  String?
+  password  String? // Senha (opcional para compatibilidade com Google)
   userType  UserType
   createdAt DateTime @default(now())
 
@@ -36,6 +37,7 @@ model User {
   favoritedByRecruiters FavoriteCandidate[] @relation("CandidateFavorites")
   favoriteCandidates FavoriteCandidate[] @relation("RecruiterFavorites")
 }
+
 
 model FavoriteCandidate {
   id          String   @id @default(cuid())
