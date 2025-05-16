@@ -6,69 +6,54 @@ import { requestLogger } from "./middlewares/requestLogger";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
 import formRouter from "./routes/formRoutes";
-import responseFormRouter from "./routes/responseFormRouter"; 
+import responseFormRouter from "./routes/responseFormRouter";
 import talentRoutes from "./routes/talentRouter";
 import reportRoutes from "./routes/reportRoutes";
-import feedbackRouter from "./routes/feedbackRouter"; 
-import companyRouter from "./routes/companyRouter"; 
+import feedbackRouter from "./routes/feedbackRouter";
+import companyRouter from "./routes/companyRouter";
 import opportunityRoutes from "./routes/oportunityRoutes";
+import bankTalentsRouter from "./routes/bankTalentsRouter";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./docs/swagger";
-import YAML from 'yamljs';
-const swaggerDocument = YAML.load(__dirname + '/docs/swagger.yaml');
-
-
+import YAML from "yamljs";
+const swaggerDocument = YAML.load(__dirname + "/docs/swagger.yaml");
 
 dotenv.config();
 
 const app = express();
 
-// Log de todas as requisições
 app.use(requestLogger);
-
-// Parse de JSON no body
 app.use(express.json());
 
-// Configuração de sessão (usada só para o fluxo OAuth)
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
     cookie: {
-      secure: false,   // true em produção com HTTPS
-      httpOnly: true,  // impede acesso via JS no browser
+      secure: false,
+      httpOnly: true,
     },
   })
 );
 
-// Inicializa o Passport (Google OAuth)
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Rotas de autenticação (login Google, callback, logout, /me)
 app.use("/auth", authRoutes);
-
-// Rotas de formulário (CRUD de Form), protegidas via JWT e onlyRH
 app.use("/forms", formRouter);
-
-// Rotas de respostas (candidato responde e RH visualiza)
-app.use("/candidate", responseFormRouter); // Registra as rotas de respostas
-
-app.use("/talents", talentRoutes); // Rotas do Banco de Talentos
-
-app.use("/reports", reportRoutes); // Rotas de relatórios
-
+app.use("/candidate", responseFormRouter);
+app.use("/talents", talentRoutes);
+app.use("/reports", reportRoutes);
 app.use("/notifications", feedbackRouter);
-app.use("/empresa", companyRouter); // Rotas de empresa
-
+app.use("/empresa", companyRouter);
 app.use("/opportunities", opportunityRoutes);
-// Middleware centralizado de tratamento de erros
+app.use("/bank-talents", bankTalentsRouter);
+
 app.use(errorHandler);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/talent-bank", bankTalentsRouter);
 
 export default app;

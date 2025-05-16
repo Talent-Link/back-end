@@ -31,6 +31,22 @@ model User {
 
   // Relação inversa para Notification (Notificações associadas ao usuário)
   notifications Notification[]
+
+  // Relação inversa para candidatos favoritos (Banco de Talentos)
+  favoritedByRecruiters FavoriteCandidate[] @relation("CandidateFavorites")
+  favoriteCandidates FavoriteCandidate[] @relation("RecruiterFavorites")
+}
+
+model FavoriteCandidate {
+  id          String   @id @default(cuid())
+  candidateId String
+  recruiterId String
+  createdAt   DateTime @default(now())
+
+  candidate   User @relation("CandidateFavorites", fields: [candidateId], references: [id])
+  recruiter   User @relation("RecruiterFavorites", fields: [recruiterId], references: [id])
+
+  @@unique([candidateId, recruiterId])
 }
 
 model Company {
@@ -56,7 +72,6 @@ model Form {
   // Relação para User, referenciando recruiterId
   recruiter User @relation("UserForms", fields: [recruiterId], references: [id])
 
-
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -78,11 +93,11 @@ model Response {
 model Notification {
   id          String   @id @default(cuid())
   userId      String
-  type        NotificationType // "FEEDBACK" ou "GENERAL"
+  type        NotificationType
   title       String
   message     String
-  status      String?  // "approved", "rejected", "in-progress"
-  score       Int?     // Pontuação opcional (0-100)
+  status      String?
+  score       Int?
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 
@@ -93,8 +108,6 @@ enum NotificationType {
   FEEDBACK
   GENERAL
 }
-
-
 
 model Opportunity {
   id          String   @id @default(cuid())
