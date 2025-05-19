@@ -55,7 +55,7 @@ export async function createOpportunity(
 ): Promise<void> {
   try {
     const user = req.user as any;
-    const { title, description, location, companyId, formId, requirements } =
+    const { title, description, location, companyId, formId, requirements , benefits} =
       req.body;
 
     if (!user || user.userType !== "RH") {
@@ -85,7 +85,7 @@ export async function createOpportunity(
       }
     }
 
-    const data: any = { title, description, location, companyId };
+    const data: any = { title, description, location, companyId, benefits };
 
     // Verificando e incluindo requisitos se existirem
     if (requirements) data.requirements = requirements;
@@ -316,5 +316,148 @@ export async function getUserOpportunities(
   } catch (error) {
     console.error("Erro ao buscar oportunidades do candidato:", error);
     res.status(500).send("Erro interno ao buscar oportunidades.");
+  }
+}
+
+
+export async function deleteOpportunity(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    if (!user) {
+      res.status(401).send("Usuário não autenticado.");
+      return;
+    }
+
+    if (user.userType !== "RH") {
+      res.status(403).send("Acesso restrito a RH.");
+      return;
+    }
+
+    const opportunity = await prisma.opportunity.findUnique({
+      where: { id },
+      include: { company: true },
+    });
+
+    if (!opportunity) {
+      res.status(404).send("Oportunidade não encontrada.");
+      return;
+    }
+
+    if (opportunity.company.recruiterId !== user.id) {
+      res.status(403).send("Sem permissão para excluir esta oportunidade.");
+      return;
+    }
+
+    // Excluir todas as respostas associadas à oportunidade
+    await prisma.response.deleteMany({
+      where: { opportunityId: id },
+    });
+
+    // Agora exclui a oportunidade
+    await prisma.opportunity.delete({ where: { id } });
+
+    res.status(200).send("Oportunidade e respostas associadas excluídas com sucesso.");
+  } catch (error) {
+    console.error("Erro ao excluir oportunidade:", error);
+    res.status(500).send("Erro interno ao excluir oportunidade.");
+  }
+}
+
+
+// função para desativar oportunidade
+export async function deactivateOpportunity(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    if (!user) {
+      res.status(401).send("Usuário não autenticado.");
+      return;
+    }
+
+    if (user.userType !== "RH") {
+      res.status(403).send("Acesso restrito a RH.");
+      return;
+    }
+
+    const opportunity = await prisma.opportunity.findUnique({
+      where: { id },
+      include: { company: true },
+    });
+
+    if (!opportunity) {
+      res.status(404).send("Oportunidade não encontrada.");
+      return;
+    }
+
+    if (opportunity.company.recruiterId !== user.id) {
+      res.status(403).send("Sem permissão para desativar esta oportunidade.");
+      return;
+    }
+
+    // Atualiza o status da oportunidade para inativa
+    await prisma.opportunity.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    res.status(200).send("Oportunidade desativada com sucesso.");
+  } catch (error) {
+    console.error("Erro ao desativar oportunidade:", error);
+    res.status(500).send("Erro interno ao desativar oportunidade.");
+  }
+}
+
+export async function activateOpportunity(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    if (!user) {
+      res.status(401).send("Usuário não autenticado.");
+      return;
+    }
+
+    if (user.userType !== "RH") {
+      res.status(403).send("Acesso restrito a RH.");
+      return;
+    }
+
+    const opportunity = await prisma.opportunity.findUnique({
+      where: { id },
+      include: { company: true },
+    });
+
+    if (!opportunity) {
+      res.status(404).send("Oportunidade não encontrada.");
+      return;
+    }
+
+    if (opportunity.company.recruiterId !== user.id) {
+      res.status(403).send("Sem permissão para ativar esta oportunidade.");
+      return;
+    }
+
+    // Atualiza o status da oportunidade para ativa
+    await prisma.opportunity.update({
+      where: { id },
+      data: { isActive: true },
+    });
+
+    res.status(200).send("Oportunidade ativada com sucesso.");
+  } catch (error) {
+    console.error("Erro ao ativar oportunidade:", error);
+    res.status(500).send("Erro interno ao ativar oportunidade.");
   }
 }

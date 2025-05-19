@@ -8,6 +8,9 @@ import {
   searchOpportunities,
   withdrawApplication,
   getUserOpportunities,
+  deleteOpportunity,
+  activateOpportunity,
+  deactivateOpportunity,
 } from "../controllers/opportunityController";
 import { ensureToken, onlyRH } from "../middlewares/jwtAuth";
 
@@ -34,5 +37,14 @@ router.get("/:id/responses", ensureToken, onlyRH, getResponsesByOpportunity);
 
 // DELETE /opportunities/:responseId/withdraw → candidato retira candidatura
 router.delete("/:responseId/withdraw", ensureToken, withdrawApplication);
+
+// DELETE /opportunities/:id        → só RH pode deletar oportunidade
+router.delete("/:id", ensureToken, onlyRH, deleteOpportunity);
+
+// PATCH /opportunities/:id/activate → só RH pode ativar oportunidade
+router.patch("/:id/activate", ensureToken, onlyRH, activateOpportunity);
+
+// PATCH /opportunities/:id/deactivate → só RH pode desativar oportunidade
+router.patch("/:id/deactivate", ensureToken, onlyRH, deactivateOpportunity);
 
 export default router;
