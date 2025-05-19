@@ -3,11 +3,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`URL de autenticação RH:      http://localhost:${PORT}/auth/google/RH`);
-  console.log(`URL de autenticação Candidato: http://localhost:${PORT}/auth/google/CANDIDATO`);
-  console.log(`Documentação da API: http://localhost:${PORT}/api-docs`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Servidor rodando na porta ${PORT}`);
+  console.log(`🔗 URL de autenticação RH: https://seu-servico-render.onrender.com/auth/google/RH`);
+  console.log(`🔗 URL de autenticação Candidato: https://seu-servico-render.onrender.com/auth/google/CANDIDATO`);
+  console.log(`📄 Documentação da API: https://seu-servico-render.onrender.com/api-docs`);
 });
