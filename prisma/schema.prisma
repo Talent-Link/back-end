@@ -20,6 +20,8 @@ model User {
   password  String? // Senha (opcional para compatibilidade com Google)
   userType  UserType
   createdAt DateTime @default(now())
+  isEmailConfirmed Boolean  @default(false)
+  emailConfirmationToken String? // Token de confirmação de email
 
   // Relação inversa para Form (RH cria formulários)
   forms Form[] @relation("UserForms")
@@ -37,6 +39,7 @@ model User {
   favoritedByRecruiters FavoriteCandidate[] @relation("CandidateFavorites")
   favoriteCandidates FavoriteCandidate[] @relation("RecruiterFavorites")
 }
+
 
 
 model FavoriteCandidate {
