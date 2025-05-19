@@ -23,7 +23,7 @@ const swaggerDocument = YAML.load(__dirname + "/docs/swagger.yaml");
 const app = express();
 
 app.use(requestLogger);
-app.use(express.json());
+app.use(express.json());  
 
 app.use(
   session({

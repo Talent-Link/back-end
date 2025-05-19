@@ -2,10 +2,14 @@
   "name": "back-end",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
+"scripts": {
+  "postinstall": "prisma generate",
+  "dev": "npx prisma generate && ts-node-dev src/server.ts",
+  "build": "tsc",
+  "start": "npx prisma generate && node dist/server.js"
+},
+
+"keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
