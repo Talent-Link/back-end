@@ -8,10 +8,11 @@ dotenv.config();
 async function main() {
   await prisma.$connect();
   
-  const PORT = process.env.PORT ? Number(process.env.PORT) : 3000; // Usando a porta do ambiente
-  const HOST = "0.0.0.0"; // Garantindo que o servidor escute externamente
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
-  app.listen(PORT, HOST, () => {
+
+  app.listen(PORT,() => {
     console.log(`Servidor rodando na porta ${PORT}`);
     console.log(`URL de autenticação RH: http://${HOST}:${PORT}/auth/google/RH`);
     console.log(`URL de autenticação Candidato: http://${HOST}:${PORT}/auth/google/CANDIDATO`);
