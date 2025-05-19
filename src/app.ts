@@ -19,28 +19,22 @@ import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./docs/swagger";
 import YAML from "yamljs";
 const swaggerDocument = YAML.load(__dirname + "/docs/swagger.yaml");
-import RedisStore from "connect-redis";
-import Redis from "ioredis";
 
 dotenv.config();
 
 const app = express();
-
-const redisClient = new Redis(process.env.REDIS_URL);
 
 app.use(requestLogger);
 app.use(express.json());
 
 app.use(
   session({
-    store: new RedisStore({ client: redisClient }),
     secret: process.env.SESSION_SECRET!,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       httpOnly: true,
-      maxAge: 1000 * 60 * 60, // 1 hora
     },
   })
 );
