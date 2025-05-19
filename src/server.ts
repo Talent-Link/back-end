@@ -8,12 +8,14 @@ dotenv.config();
 async function main() {
   await prisma.$connect();
   
-  const PORT = Number(process.env.PORT) || 3000; // Garante que PORT é sempre um número
-  app.listen(PORT, "0.0.0.0", () => { // Adiciona "0.0.0.0" para expor corretamente
+  const PORT = process.env.PORT ? Number(process.env.PORT) : 3000; // Usando a porta do ambiente
+  const HOST = "0.0.0.0"; // Garantindo que o servidor escute externamente
+
+  app.listen(PORT, HOST, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`URL de autenticação RH: http://localhost:${PORT}/auth/google/RH`);
-    console.log(`URL de autenticação Candidato: http://localhost:${PORT}/auth/google/CANDIDATO`);
-    console.log(`Documentação da API: http://localhost:${PORT}/api-docs`);
+    console.log(`URL de autenticação RH: http://${HOST}:${PORT}/auth/google/RH`);
+    console.log(`URL de autenticação Candidato: http://${HOST}:${PORT}/auth/google/CANDIDATO`);
+    console.log(`Documentação da API: http://${HOST}:${PORT}/api-docs`);
   });
 }
 
