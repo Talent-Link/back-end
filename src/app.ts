@@ -20,8 +20,6 @@ import swaggerSpec from "./docs/swagger";
 import YAML from "yamljs";
 const swaggerDocument = YAML.load(__dirname + "/docs/swagger.yaml");
 
-dotenv.config();
-
 const app = express();
 
 app.use(requestLogger);
