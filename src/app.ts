@@ -15,11 +15,12 @@ import companyRouter from "./routes/companyRouter";
 import opportunityRoutes from "./routes/oportunityRoutes";
 import bankTalentsRouter from "./routes/bankTalentsRouter";
 
+dotenv.config();
 
 const app = express();
 
 app.use(requestLogger);
-app.use(express.json());  
+app.use(express.json());
 
 app.use(
   session({
@@ -46,6 +47,11 @@ app.use("/notifications", feedbackRouter);
 app.use("/empresa", companyRouter);
 app.use("/opportunities", opportunityRoutes);
 app.use("/bank-talents", bankTalentsRouter);
+
+// ✅ Rota raiz para teste de funcionamento
+app.get("/", (req, res) => {
+  res.send("🚀 TalentLink API rodando com sucesso!");
+});
 
 app.use(errorHandler);
 
