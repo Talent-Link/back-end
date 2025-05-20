@@ -15,10 +15,6 @@ import companyRouter from "./routes/companyRouter";
 import opportunityRoutes from "./routes/oportunityRoutes";
 import bankTalentsRouter from "./routes/bankTalentsRouter";
 
-import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./docs/swagger";
-import YAML from "yamljs";
-const swaggerDocument = YAML.load(__dirname + "/docs/swagger.yaml");
 
 const app = express();
 
@@ -53,8 +49,6 @@ app.use("/bank-talents", bankTalentsRouter);
 
 app.use(errorHandler);
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/talent-bank", bankTalentsRouter);
 
 export default app;
