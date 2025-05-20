@@ -5,38 +5,28 @@ import { Request } from "express";
 
 const prisma = new PrismaClient();
 
-passport.use(
-  new GoogleStrategy(
+function createGoogleStrategy(userType: "RH" | "CANDIDATO") {
+  return new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: "/auth/google/callback",
+      callbackURL: `https://talentlink-wd88.onrender.com/auth/google/${userType}/callback`,
       passReqToCallback: true,
     },
     async (req: Request, accessToken, refreshToken, profile, done) => {
       try {
-        // Recupera o tipo de usuário da sessão
-        const userType = (req.session as any).userType;
+        const email = profile.emails?.[0].value;
+        if (!email) return done(new Error("Email não encontrado"), false);
 
-        console.log("Tipo de usuário no callback do Google:", userType);
+        let user = await prisma.user.findUnique({ where: { email } });
 
-        if (!userType) {
-          return done(new Error("Tipo de usuário não especificado."), false);
-        }
-
-        // Busca o usuário no banco
-        let user = await prisma.user.findUnique({
-          where: { email: profile.emails?.[0].value },
-        });
-
-        // Se não existe, cria novo
         if (!user) {
           user = await prisma.user.create({
             data: {
-              email: profile.emails?.[0].value!,
+              email,
               name: profile.displayName,
               photoUrl: profile.photos?.[0].value,
-              userType: userType as "RH" | "CANDIDATO",
+              userType,
             },
           });
         }
@@ -47,15 +37,16 @@ passport.use(
         return done(error, false);
       }
     }
-  )
-);
+  );
+}
 
-// Serializa apenas o ID do usuário
+passport.use("google-RH", createGoogleStrategy("RH"));
+passport.use("google-CANDIDATO", createGoogleStrategy("CANDIDATO"));
+
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
-// Desserializa o usuário a partir do ID
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await prisma.user.findUnique({ where: { id } });

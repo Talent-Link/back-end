@@ -5,29 +5,38 @@ import {
   logout,
   getCurrentUser,
 } from "../controllers/authController";
-import { validateUserType } from "../middlewares/validationMiddleware";
 import { isAuthenticated } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-// Rota de callback do Google
+// Início do login com Google
 router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
+  "/google/RH",
+  passport.authenticate("google-RH", { scope: ["profile", "email"] })
+);
+
+router.get(
+  "/google/CANDIDATO",
+  passport.authenticate("google-CANDIDATO", { scope: ["profile", "email"] })
+);
+
+// Callback do Google
+router.get(
+  "/google/RH/callback",
+  passport.authenticate("google-RH", { failureRedirect: "/" }),
   handleGoogleCallback
 );
 
-// Rota para iniciar login com Google e armazenar o tipo de usuário na sessão
 router.get(
-  "/google/:userType",
-  validateUserType,
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  "/google/CANDIDATO/callback",
+  passport.authenticate("google-CANDIDATO", { failureRedirect: "/" }),
+  handleGoogleCallback
 );
 
-// Rota para logout
+// Logout
 router.get("/logout", logout);
 
-// Rota para obter os dados do usuário autenticado
+// Usuário atual autenticado
 router.get("/me", isAuthenticated, getCurrentUser);
 
 export default router;
