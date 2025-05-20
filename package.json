@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
 "scripts": {
-  "postinstall": "prisma generate",
-  "dev": "npx prisma generate && ts-node-dev src/server.ts",
+  "start": "ts-node-dev server.ts",
   "build": "tsc",
-  "start": "npx prisma generate && node dist/server.js"
-},
+    "postinstall": "prisma generate"
+}
+,
 
 "keywords": [],
   "author": "",
