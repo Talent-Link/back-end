@@ -11,6 +11,7 @@ import {
   deleteOpportunity,
   activateOpportunity,
   deactivateOpportunity,
+  hasCandidateResponded
 } from "../controllers/opportunityController";
 import { ensureToken, onlyRH } from "../middlewares/jwtAuth";
 
@@ -46,5 +47,8 @@ router.patch("/:id/activate", ensureToken, onlyRH, activateOpportunity);
 
 // PATCH /opportunities/:id/deactivate → só RH pode desativar oportunidade
 router.patch("/:id/deactivate", ensureToken, onlyRH, deactivateOpportunity);
+
+router.get("/candidate/:id/responded", ensureToken, hasCandidateResponded);
+
 
 export default router;

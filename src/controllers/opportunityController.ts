@@ -465,3 +465,30 @@ export async function activateOpportunity(
     res.status(500).send("Erro interno ao ativar oportunidade.");
   }
 }
+
+export async function hasCandidateResponded(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const user = req.user as any;
+    const opportunityId = req.params.id;
+
+    if (!user || user.userType !== "CANDIDATO") {
+      res.status(403).json({ responded: false });
+      return;
+    }
+
+    const existing = await prisma.response.findFirst({
+      where: {
+        candidateId: user.id,
+        opportunityId,
+      },
+    });
+
+    res.status(200).json({ responded: !!existing });
+  } catch (error) {
+    console.error("Erro ao verificar candidatura:", error);
+    res.status(500).json({ responded: false });
+  }
+}
