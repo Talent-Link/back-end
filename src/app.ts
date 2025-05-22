@@ -2,6 +2,7 @@ import express from "express";
 import session from "express-session";
 import passport from "./config/passport";
 import dotenv from "dotenv";
+import cors from "cors";
 import { requestLogger } from "./middlewares/requestLogger";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
@@ -21,6 +22,13 @@ const app = express();
 
 app.use(requestLogger);
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use(
   session({
@@ -48,7 +56,6 @@ app.use("/empresa", companyRouter);
 app.use("/opportunities", opportunityRoutes);
 app.use("/bank-talents", bankTalentsRouter);
 
-// ✅ Rota raiz para teste de funcionamento
 app.get("/", (req, res) => {
   res.send("🚀 TalentLink API rodando com sucesso!");
 });
