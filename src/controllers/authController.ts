@@ -46,7 +46,6 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     return;
   }
 
-  // Cria payload e assina token
   const payload = {
     sub: user.id,
     userType: user.userType,
@@ -54,18 +53,32 @@ export function handleGoogleCallback(req: Request, res: Response): void {
 
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 
-  // Envia token e dados do usuário
-  res.json({
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      userType: user.userType,
-      name: user.name,
-      photoUrl: user.photoUrl,
-    },
-  });
+  const html = `
+    <html>
+      <body>
+        <script>
+          window.opener.postMessage(
+            ${JSON.stringify({
+              token,
+              user: {
+                id: user.id,
+                email: user.email,
+                userType: user.userType,
+                name: user.name,
+                photoUrl: user.photoUrl,
+              }
+            })},
+            "http://localhost:3000"
+          );
+          window.close();
+        </script>
+      </body>
+    </html>
+  `;
+
+  res.send(html);
 }
+
 
 /**
  * Logout do usuário
