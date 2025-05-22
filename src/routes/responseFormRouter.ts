@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { submitResponse, getResponses } from "../controllers/responseFormController";
+import { submitResponse, getResponses, hasCandidateResponded } from "../controllers/responseFormController";
 import { ensureToken } from "../middlewares/jwtAuth";
 
 const router = Router();
@@ -12,5 +12,8 @@ router.post("/responses", submitResponse);
 
 // Rota para o RH visualizar respostas de um formulário
 router.get("/responses/:formId", getResponses);
+
+// Rota para verificar se o candidato já respondeu ao formulário
+router.get("/:id/responded", hasCandidateResponded);
 
 export default router;
