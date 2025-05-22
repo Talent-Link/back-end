@@ -34,6 +34,20 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
       return;
     }
 
+    //Verificação: já respondeu?
+    const existingResponse = await prisma.response.findFirst({
+      where: {
+        candidateId: user.id,
+        opportunityId: opportunityId,
+      },
+    });
+
+    if (existingResponse) {
+      res.status(409).json({ message: "Você já se candidatou a esta vaga." });
+      return;
+    }
+
+    // Cria nova resposta
     const response = await prisma.response.create({
       data: {
         candidate: { connect: { id: user.id } },
@@ -48,6 +62,7 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
     res.status(500).send("Erro interno ao enviar respostas.");
   }
 }
+
 
 export async function getResponses(req: Request, res: Response): Promise<void> {
   try {

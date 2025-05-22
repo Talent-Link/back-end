@@ -7,135 +7,108 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserType {
-  RH
-  CANDIDATO
-}
-
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  photoUrl  String?
-  password  String? // Senha (opcional para compatibilidade com Google)
-  userType  UserType
-  createdAt DateTime @default(now())
-  isEmailConfirmed Boolean  @default(false)
-  emailConfirmationToken String? // Token de confirmação de email
-
-  // Relação inversa para Form (RH cria formulários)
-  forms Form[] @relation("UserForms")
-
-  // Relação inversa para Response (Candidato responde formulários)
-  responses Response[]
-
-  // Relação inversa para Company (RH gerencia uma empresa)
-  company Company?
-
-  // Relação inversa para Notification (Notificações associadas ao usuário)
-  notifications Notification[]
-
-  // Relação inversa para candidatos favoritos (Banco de Talentos)
-  favoritedByRecruiters FavoriteCandidate[] @relation("CandidateFavorites")
-  favoriteCandidates FavoriteCandidate[] @relation("RecruiterFavorites")
+  id                     String              @id @default(cuid())
+  email                  String              @unique
+  name                   String?
+  photoUrl               String?
+  userType               UserType
+  createdAt              DateTime            @default(now())
+  password               String?
+  emailConfirmationToken String?
+  isEmailConfirmed       Boolean             @default(false)
+  company                Company?
+  favoritedByRecruiters  FavoriteCandidate[] @relation("CandidateFavorites")
+  favoriteCandidates     FavoriteCandidate[] @relation("RecruiterFavorites")
+  forms                  Form[]              @relation("UserForms")
+  notifications          Notification[]
+  responses              Response[]
 }
-
-
 
 model FavoriteCandidate {
   id          String   @id @default(cuid())
   candidateId String
   recruiterId String
   createdAt   DateTime @default(now())
-
-  candidate   User @relation("CandidateFavorites", fields: [candidateId], references: [id])
-  recruiter   User @relation("RecruiterFavorites", fields: [recruiterId], references: [id])
+  candidate   User     @relation("CandidateFavorites", fields: [candidateId], references: [id])
+  recruiter   User     @relation("RecruiterFavorites", fields: [recruiterId], references: [id])
 
   @@unique([candidateId, recruiterId])
 }
 
 model Company {
-  id          String         @id @default(cuid())
-  name        String
-  description String?
-  address     String
-  recruiterId String         @unique
-  recruiter   User           @relation(fields: [recruiterId], references: [id])
-  createdAt   DateTime       @default(now())
-
-  // Relação para oportunidades criadas pela empresa
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  address       String
+  recruiterId   String        @unique
+  createdAt     DateTime      @default(now())
+  recruiter     User          @relation(fields: [recruiterId], references: [id])
   opportunities Opportunity[]
 }
 
 model Form {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  questions   Json
-  recruiterId String
-
-  // Relação para User, referenciando recruiterId
-  recruiter User @relation("UserForms", fields: [recruiterId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  // Relação inversa para Opportunity (Oportunidades que utilizam este formulário)
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  questions     Json
+  recruiterId   String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now()) @updatedAt
+  recruiter     User          @relation("UserForms", fields: [recruiterId], references: [id])
   opportunities Opportunity[]
 }
 
 model Response {
-  id            String       @id @default(cuid())
+  id            String         @id @default(cuid())
   candidateId   String
-  opportunityId String
   answers       Json
-  createdAt     DateTime     @default(now())
-
-  candidate     User         @relation(fields: [candidateId], references: [id])
-  opportunity   Opportunity  @relation(fields: [opportunityId], references: [id])
-
-  // Opposite relation to Notification
+  createdAt     DateTime       @default(now())
+  opportunityId String
   notifications Notification[]
+  candidate     User           @relation(fields: [candidateId], references: [id])
+  opportunity   Opportunity    @relation(fields: [opportunityId], references: [id])
+
+  @@unique([candidateId, opportunityId], map: "unique_candidate_opportunity")
 }
 
 model Notification {
-  id          String   @id @default(cuid())
-  userId      String
-  type        NotificationType
-  title       String
-  message     String
-  status      String?
-  score       Int?
-  read        Boolean  @default(false)
-  createdAt   DateTime @default(now())
-
-  // ✅ Nova relação com Response
-  responseId  String?
-  response    Response? @relation(fields: [responseId], references: [id])
-
-  user        User     @relation(fields: [userId], references: [id])
+  id         String           @id @default(cuid())
+  userId     String
+  type       NotificationType
+  title      String
+  message    String
+  read       Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  score      Int?
+  status     String?
+  responseId String?
+  response   Response?        @relation(fields: [responseId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
 }
 
+model Opportunity {
+  id           String     @id @default(cuid())
+  title        String
+  description  String
+  location     String
+  companyId    String
+  createdAt    DateTime   @default(now())
+  formId       String?
+  requirements String?
+  benefits     String?
+  isActive     Boolean    @default(true)
+  company      Company    @relation(fields: [companyId], references: [id])
+  form         Form?      @relation(fields: [formId], references: [id])
+  responses    Response[]
+}
+
+enum UserType {
+  RH
+  CANDIDATO
+}
 
 enum NotificationType {
   FEEDBACK
   GENERAL
-}
-
-model Opportunity {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  location    String
-  companyId   String
-  benefits    String?
-  requirements String?
-  company     Company  @relation(fields: [companyId], references: [id])
-  formId      String?
-  isActive  Boolean  @default(true)
-  form        Form?    @relation(fields: [formId], references: [id])
-  createdAt   DateTime @default(now())
-
-  // Relação inversa para Response (Respostas associadas à oportunidade)
-  responses   Response[]
 }
