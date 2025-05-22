@@ -93,6 +93,9 @@ model Response {
 
   candidate     User         @relation(fields: [candidateId], references: [id])
   opportunity   Opportunity  @relation(fields: [opportunityId], references: [id])
+
+  // Opposite relation to Notification
+  notifications Notification[]
 }
 
 model Notification {
@@ -106,8 +109,13 @@ model Notification {
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 
+  // ✅ Nova relação com Response
+  responseId  String?
+  response    Response? @relation(fields: [responseId], references: [id])
+
   user        User     @relation(fields: [userId], references: [id])
 }
+
 
 enum NotificationType {
   FEEDBACK

@@ -69,7 +69,7 @@ export async function sendNotification(req: Request, res: Response): Promise<voi
  */
 export async function sendFeedback(req: Request, res: Response): Promise<void> {
   try {
-    const { userId, title, message, status, score, sendEmail } = req.body;
+    const { userId, title, message, status, score, sendEmail, responseId } = req.body;
 
     // Verifica se o usuário existe
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -106,6 +106,7 @@ export async function sendFeedback(req: Request, res: Response): Promise<void> {
         status: status || "in-progress",
         score: score || null,
         read: false,
+        responseId: responseId || null,
       },
     });
 
@@ -130,13 +131,30 @@ export async function getUserFeedbacks(req: Request, res: Response): Promise<voi
     }
 
     // Busca todos os feedbacks do usuário
-    const feedbacks = await prisma.notification.findMany({
-      where: {
-        userId: user.id,
-        type: "FEEDBACK",
+   const feedbacks = await prisma.notification.findMany({
+  where: {
+    userId: user.id,
+    type: "FEEDBACK",
+  },
+  include: {
+    response: {
+      include: {
+        opportunity: {
+          select: {
+            title: true,
+            company: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: { createdAt: "desc" },
-    });
+    },
+  },
+  orderBy: { createdAt: "desc" },
+});
+
 
     // Verifica se existem feedbacks
     if (feedbacks.length === 0) {
