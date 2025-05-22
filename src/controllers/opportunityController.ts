@@ -32,7 +32,8 @@ export async function getOpportunityById(
     const opportunity = await prisma.opportunity.findUnique({
       where: { id },
       include: {
-        company: { select: { name: true, description: true, address: true } },
+        form: true,
+        company: true,
       },
     });
 
@@ -55,8 +56,15 @@ export async function createOpportunity(
 ): Promise<void> {
   try {
     const user = req.user as any;
-    const { title, description, location, companyId, formId, requirements , benefits} =
-      req.body;
+    const {
+      title,
+      description,
+      location,
+      companyId,
+      formId,
+      requirements,
+      benefits,
+    } = req.body;
 
     if (!user || user.userType !== "RH") {
       res.status(403).send("Apenas RH pode criar oportunidades.");
@@ -241,11 +249,9 @@ export async function withdrawApplication(
     }
 
     if (response.candidateId !== user.id) {
-      res
-        .status(403)
-        .json({
-          message: "Você não tem permissão para retirar esta candidatura.",
-        });
+      res.status(403).json({
+        message: "Você não tem permissão para retirar esta candidatura.",
+      });
       return;
     }
 
@@ -298,11 +304,9 @@ export async function getUserOpportunities(
     });
 
     if (applications.length === 0) {
-      res
-        .status(404)
-        .json({
-          message: "Você ainda não se candidatou a nenhuma oportunidade.",
-        });
+      res.status(404).json({
+        message: "Você ainda não se candidatou a nenhuma oportunidade.",
+      });
       return;
     }
 
@@ -318,7 +322,6 @@ export async function getUserOpportunities(
     res.status(500).send("Erro interno ao buscar oportunidades.");
   }
 }
-
 
 export async function deleteOpportunity(
   req: Request,
@@ -361,13 +364,14 @@ export async function deleteOpportunity(
     // Agora exclui a oportunidade
     await prisma.opportunity.delete({ where: { id } });
 
-    res.status(200).send("Oportunidade e respostas associadas excluídas com sucesso.");
+    res
+      .status(200)
+      .send("Oportunidade e respostas associadas excluídas com sucesso.");
   } catch (error) {
     console.error("Erro ao excluir oportunidade:", error);
     res.status(500).send("Erro interno ao excluir oportunidade.");
   }
 }
-
 
 // função para desativar oportunidade
 export async function deactivateOpportunity(
