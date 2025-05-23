@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { create } from "domain";
 
 const prisma = new PrismaClient();
 
@@ -314,6 +315,7 @@ export async function getUserOpportunities(
       responseId: app.id,
       title: app.opportunity?.title,
       companyName: app.opportunity?.company?.name,
+      createdAt: app.createdAt,
     }));
 
     res.status(200).json(opportunities);
