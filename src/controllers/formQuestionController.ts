@@ -15,10 +15,19 @@ interface Question {
 }
 
 function buildPrompt(type: QuestionType, questions: { text: string }[]): string {
-    const typeText = type === "MULTIPLE_CHOICE" ? "de múltipla escolha" : "aberta";
-    const questionsText = questions.map((q, i) => `${i + 1}. ${q.text}`).join("\n");
-    return `Você é um modelo de IA. Baseado nas questões a seguir, gere uma nova questão ${typeText} que seja coerente com o contexto. Se for de múltipla escolha, gere opções claras e diretas.\n\n${questionsText}`;
+  const typeText = type === "MULTIPLE_CHOICE" ? "de múltipla escolha" : "aberta";
+  const questionsText = questions.map((q, i) => `${i + 1}. ${q.text}`).join("\n");
+  
+  return `Você é um gerador de perguntas para um formulário de recrutamento. 
+Com base nas perguntas abaixo, gere uma NOVA questão ${typeText}, relacionada ao mesmo contexto, mas que ainda não tenha sido perguntada. 
+Se for de múltipla escolha, inclua 4 opções claras e diretas (A, B, C, D).
+
+Perguntas já existentes:
+${questionsText}
+
+Nova pergunta:`;
 }
+
 
 function extractOptions(questionText: string): string[] {
     const optionRegex = /\n\s*[A-D]\)\s*(.+)/g;
