@@ -30,46 +30,55 @@ function extractOptions(questionText: string): string[] {
 }
 
 export async function generateQuestionFromLocal(req: Request, res: Response): Promise<void> {
-    try {
-        const { type, questions } = req.body;
+  try {
+    const { type, questions } = req.body;
 
-        if (!questions || !Array.isArray(questions) || questions.length === 0) {
-            res.status(400).send("É necessário fornecer as questões atuais.");
-            return;
-        }
-
-        const prompt = buildPrompt(type, questions);
-
-        const response = await fetch(GROQ_API_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: GROQ_MODEL,
-                messages: [{ role: "user", content: prompt }],
-                max_tokens: 200
-            })
-        });
-
-        const data = await response.json();
-        const questionText = data.choices?.[0]?.message?.content?.trim();
-
-        if (!questionText) {
-            res.status(400).send("A questão gerada é inválida.");
-            return;
-        }
-
-        const generatedQuestion: Question = {
-            text: questionText,
-            type,
-            ...(type === "MULTIPLE_CHOICE" && { options: extractOptions(questionText) })
-        };
-
-        res.status(200).json(generatedQuestion);
-    } catch (error) {
-        console.error("Erro ao gerar questão a partir das questões locais:", error);
-        res.status(500).send("Erro interno ao gerar questão.");
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      res.status(400).send("É necessário fornecer as questões atuais.");
+      return;
     }
+
+    const prompt = buildPrompt(type, questions);
+
+    const response = await fetch(GROQ_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 200,
+      }),
+    });
+
+    const data = await response.json();
+    const rawText = data.choices?.[0]?.message?.content?.trim();
+
+    if (!rawText) {
+      res.status(400).send("A questão gerada é inválida.");
+      return;
+    }
+
+    // Extrai apenas a pergunta, limpando prefixos e asteriscos
+    const cleanedText = rawText
+      .split("**").pop()                  // se vier entre **
+      ?.split(":").pop()                  // se tiver introdução com dois pontos
+      ?.replace(/^[-–*●]+/, "")           // remove marcadores iniciais
+      ?.replace(/^["“”]+|["“”]+$/g, "")   // remove aspas
+      ?.trim();
+
+    const generatedQuestion: Question = {
+      text: cleanedText || rawText,
+      type,
+      ...(type === "MULTIPLE_CHOICE" && { options: extractOptions(rawText) }),
+    };
+
+    res.status(200).json(generatedQuestion);
+  } catch (error) {
+    console.error("Erro ao gerar questão a partir das questões locais:", error);
+    res.status(500).send("Erro interno ao gerar questão.");
+  }
 }
+
