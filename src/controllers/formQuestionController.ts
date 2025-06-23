@@ -9,18 +9,29 @@ const GROQ_MODEL = "llama-3.3-70b-versatile";
 type QuestionType = "MULTIPLE_CHOICE" | "OPEN_TEXT";
 
 interface Question {
-    type: QuestionType;
-    text: string;
-    options?: string[];
+  type: QuestionType;
+  text: string;
+  options?: string[];
 }
 
-function buildPrompt(type: QuestionType, questions: { text: string }[]): string {
-  const typeText = type === "MULTIPLE_CHOICE" ? "de múltipla escolha" : "aberta";
-  const questionsText = questions.map((q, i) => `${i + 1}. ${q.text}`).join("\n");
-  
+function buildPrompt(
+  type: QuestionType,
+  questions: { text: string }[]
+): string {
+  const typeText =
+    type === "MULTIPLE_CHOICE" ? "de múltipla escolha" : "aberta";
+  const questionsText = questions
+    .map((q, i) => `${i + 1}. ${q.text}`)
+    .join("\n");
+
+  const instruction =
+    type === "MULTIPLE_CHOICE"
+      ? "Se for de múltipla escolha, inclua 4 opções claras e diretas (A, B, C, D)."
+      : "Não inclua alternativas. Apenas o enunciado da pergunta aberta.";
+
   return `Você é um gerador de perguntas para um formulário de recrutamento. 
 Com base nas perguntas abaixo, gere uma NOVA questão ${typeText}, relacionada ao mesmo contexto, mas que ainda não tenha sido perguntada. 
-Se for de múltipla escolha, inclua 4 opções claras e diretas (A, B, C, D).
+${instruction}
 
 Perguntas já existentes:
 ${questionsText}
@@ -28,17 +39,19 @@ ${questionsText}
 Nova pergunta:`;
 }
 
-
 function extractOptions(questionText: string): string[] {
-    const optionRegex = /\n\s*[A-D]\)\s*(.+)/g;
-    const options: string[] = [];
-    for (const match of questionText.matchAll(optionRegex)) {
-        if (match[1]) options.push(match[1].trim());
-    }
-    return options;
+  const optionRegex = /\n\s*[A-D]\)\s*(.+)/g;
+  const options: string[] = [];
+  for (const match of questionText.matchAll(optionRegex)) {
+    if (match[1]) options.push(match[1].trim());
+  }
+  return options;
 }
 
-export async function generateQuestionFromLocal(req: Request, res: Response): Promise<void> {
+export async function generateQuestionFromLocal(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
     const { type, questions } = req.body;
 
@@ -52,7 +65,7 @@ export async function generateQuestionFromLocal(req: Request, res: Response): Pr
     const response = await fetch(GROQ_API_URL, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -72,17 +85,21 @@ export async function generateQuestionFromLocal(req: Request, res: Response): Pr
 
     // Extrai apenas a pergunta, limpando prefixos e asteriscos
     const cleanedText = rawText
-      .split("**").pop()                  // se vier entre **
-      ?.split(":").pop()                  // se tiver introdução com dois pontos
-      ?.replace(/^[-–*●]+/, "")           // remove marcadores iniciais
-      ?.replace(/^["“”]+|["“”]+$/g, "")   // remove aspas
+      .split("**")
+      .pop() // se vier entre **
+      ?.split(":")
+      .pop() // se tiver introdução com dois pontos
+      ?.replace(/^[-–*●]+/, "") // remove marcadores iniciais
+      ?.replace(/^["“”]+|["“”]+$/g, "") // remove aspas
       ?.trim();
 
     const generatedQuestion: Question = {
       text: cleanedText || rawText,
       type,
-      ...(type === "MULTIPLE_CHOICE" && { options: extractOptions(rawText) }),
+      options: type === "MULTIPLE_CHOICE" ? extractOptions(rawText) : undefined,
     };
+
+    console.log("Resposta da IA:", rawText);
 
     res.status(200).json(generatedQuestion);
   } catch (error) {
@@ -90,4 +107,3 @@ export async function generateQuestionFromLocal(req: Request, res: Response): Pr
     res.status(500).send("Erro interno ao gerar questão.");
   }
 }
-
