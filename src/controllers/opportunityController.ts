@@ -475,3 +475,51 @@ export async function activateOpportunity(
     res.status(500).send("Erro interno ao ativar oportunidade.");
   }
 }
+
+
+export async function getOpportunitiesByRecruiter(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const user = req.user as any;
+
+    if (!user || user.userType !== "RH") {
+      res.status(403).send("Acesso restrito a RH.");
+      return;
+    }
+
+    const opportunities = await prisma.opportunity.findMany({
+      where: {
+        company: {
+          recruiterId: user.id,
+        },
+      },
+      include: {
+        company: {
+          select: {
+            name: true,
+            address: true,
+          },
+        },
+        _count: {
+          select: { responses: true },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Adiciona `applicantsCount` baseado no count de responses
+    const formatted = opportunities.map((opp) => ({
+      ...opp,
+      applicantsCount: opp._count.responses,
+    }));
+
+    res.status(200).json(formatted);
+  } catch (error) {
+    console.error("Erro ao buscar vagas do RH:", error);
+    res.status(500).send("Erro ao buscar vagas do recrutador.");
+  }
+}
