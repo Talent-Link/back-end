@@ -267,48 +267,52 @@ export async function getFormById(req: Request, res: Response): Promise<void> {
 
 export async function deleteForm(req: Request, res: Response): Promise<void> {
   try {
-    const { id } = req.params; // ID do formulário a ser deletado
-    const user = req.user as any; // Usuário autenticado
+    const { id } = req.params;
+    const user = req.user as any;
 
     if (!user) {
       res.status(401).send("Usuário não autenticado.");
       return;
     }
 
-    // Verifica se o usuário é um RH
     if (user.userType !== "RH") {
-      res
-        .status(403)
-        .send("Acesso negado. Apenas RHs podem deletar formulários.");
+      res.status(403).send("Apenas RHs podem excluir formulários.");
       return;
     }
 
-    // Busca o formulário no banco de dados
-    const form = await prisma.form.findUnique({
-      where: { id },
-    });
+    const form = await prisma.form.findUnique({ where: { id } });
 
     if (!form) {
       res.status(404).send("Formulário não encontrado.");
       return;
     }
 
-    // Verifica se o formulário pertence ao RH autenticado
     if (form.recruiterId !== user.id) {
-      res
-        .status(403)
-        .send("Você não tem permissão para deletar este formulário.");
+      res.status(403).send("Você não tem permissão para excluir este formulário.");
       return;
     }
 
-    // Deleta o formulário
-    await prisma.form.delete({
-      where: { id },
+    // Verifica se há oportunidades ativas vinculadas a esse formulário
+    const linkedOpportunities = await prisma.opportunity.findMany({
+      where: {
+        formId: id,
+        isActive: true, // só impede se estiver ativa
+      },
     });
 
-    res.status(200).send("Formulário deletado com sucesso.");
+    if (linkedOpportunities.length > 0) {
+      res
+        .status(400)
+        .send("Não é possível excluir o formulário. Ele está vinculado a oportunidades ativas.");
+      return;
+    }
+
+    // Caso contrário, pode excluir
+    await prisma.form.delete({ where: { id } });
+
+    res.status(200).send("Formulário excluído com sucesso.");
   } catch (error) {
-    console.error("Erro ao deletar formulário:", error);
-    res.status(500).send("Erro interno ao deletar formulário.");
+    console.error("Erro ao excluir formulário:", error);
+    res.status(500).send("Erro interno ao excluir formulário.");
   }
 }
