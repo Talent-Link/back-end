@@ -82,3 +82,25 @@ export async function getCompany(req: Request, res: Response): Promise<void> {
     res.status(500).send("Erro interno ao buscar empresa.");
   }
 }
+
+// controllers/companyController.ts
+export async function listCompaniesByRecruiter(req: Request, res: Response): Promise<void> {
+  try {
+    const user = req.user as any;
+
+    if (!user || user.userType !== "RH") {
+      res.status(403).send("Apenas RHs podem visualizar empresas.");
+      return;
+    }
+
+    const companies = await prisma.company.findMany({
+      where: { recruiterId: user.id },
+      select: { id: true, name: true },
+    });
+
+    res.status(200).json(companies);
+  } catch (error) {
+    console.error("Erro ao listar empresas do RH:", error);
+    res.status(500).send("Erro interno ao buscar empresas.");
+  }
+}
