@@ -233,6 +233,38 @@ export async function updateForm(req: Request, res: Response): Promise<void> {
   }
 }
 
+export async function getFormById(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params
+    const user = req.user as any
+
+    if (!user) {
+      res.status(401).send("Usuário não autenticado.")
+      return
+    }
+
+    const form = await prisma.form.findUnique({
+      where: { id },
+    })
+
+    if (!form) {
+      res.status(404).send("Formulário não encontrado.")
+      return
+    }
+
+    if (form.recruiterId !== user.id) {
+      res.status(403).send("Você não tem permissão para acessar este formulário.")
+      return
+    }
+
+    res.status(200).json(form)
+  } catch (err) {
+    console.error("Erro ao buscar formulário:", err)
+    res.status(500).send("Erro interno ao buscar formulário.")
+  }
+}
+
+
 export async function deleteForm(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params; // ID do formulário a ser deletado
