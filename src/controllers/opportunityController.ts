@@ -71,6 +71,7 @@ export async function createOpportunity(
       res.status(403).send("Apenas RH pode criar oportunidades.");
       return;
     }
+
     if (!title || !description || !location || !companyId) {
       res
         .status(400)
@@ -81,6 +82,7 @@ export async function createOpportunity(
     const company = await prisma.company.findUnique({
       where: { id: companyId },
     });
+
     if (!company || company.recruiterId !== user.id) {
       res.status(403).send("Empresa não encontrada ou sem permissão.");
       return;
@@ -94,12 +96,18 @@ export async function createOpportunity(
       }
     }
 
-    const data: any = { title, description, location, companyId, benefits };
+    const data: any = {
+      title,
+      description,
+      location,
+      companyId,
+      benefits: JSON.stringify(benefits ?? []),
+      requirements: JSON.stringify(requirements ?? []),
+    };
 
-    // Verificando e incluindo requisitos se existirem
-    if (requirements) data.requirements = requirements;
-
-    if (formId) data.formId = formId;
+    if (formId) {
+      data.formId = formId;
+    }
 
     const opportunity = await prisma.opportunity.create({ data });
     res.status(201).json(opportunity);
