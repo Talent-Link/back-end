@@ -44,11 +44,10 @@ export async function getOpportunityById(
     }
 
     res.status(200).json({
-  ...opportunity,
-  requirements: JSON.parse(opportunity.requirements ?? "[]"),
-  benefits: JSON.parse(opportunity.benefits ?? "[]"),
-});
-
+      ...opportunity,
+      requirements: JSON.parse(opportunity.requirements ?? "[]"),
+      benefits: JSON.parse(opportunity.benefits ?? "[]"),
+    });
   } catch (error) {
     console.error("Erro ao buscar oportunidade:", error);
     res.status(500).send("Erro interno ao buscar oportunidade.");
@@ -106,8 +105,15 @@ export async function createOpportunity(
       description,
       location,
       companyId,
-      benefits: JSON.stringify(benefits ?? []),
-      requirements: JSON.stringify(requirements ?? []),
+      requirements: Array.isArray(requirements)
+        ? JSON.stringify(requirements)
+        : JSON.stringify(
+            (requirements as string).split(";").map((s) => s.trim())
+          ),
+
+      benefits: Array.isArray(benefits)
+        ? JSON.stringify(benefits)
+        : JSON.stringify((benefits as string).split(";").map((s) => s.trim())),
     };
 
     if (formId) {
@@ -481,7 +487,6 @@ export async function activateOpportunity(
   }
 }
 
-
 export async function getOpportunitiesByRecruiter(
   req: Request,
   res: Response
@@ -528,7 +533,6 @@ export async function getOpportunitiesByRecruiter(
     res.status(500).send("Erro ao buscar vagas do recrutador.");
   }
 }
-
 
 export async function numeroCandidatosPorOportunidade(
   req: Request,
