@@ -43,7 +43,12 @@ export async function getOpportunityById(
       return;
     }
 
-    res.status(200).json(opportunity);
+    res.status(200).json({
+  ...opportunity,
+  requirements: JSON.parse(opportunity.requirements ?? "[]"),
+  benefits: JSON.parse(opportunity.benefits ?? "[]"),
+});
+
   } catch (error) {
     console.error("Erro ao buscar oportunidade:", error);
     res.status(500).send("Erro interno ao buscar oportunidade.");
@@ -521,5 +526,29 @@ export async function getOpportunitiesByRecruiter(
   } catch (error) {
     console.error("Erro ao buscar vagas do RH:", error);
     res.status(500).send("Erro ao buscar vagas do recrutador.");
+  }
+}
+
+
+export async function numeroCandidatosPorOportunidade(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const { id: opportunityId } = req.params;
+
+    if (!opportunityId) {
+      res.status(400).json({ message: "ID da oportunidade é obrigatório." });
+      return;
+    }
+
+    const count = await prisma.response.count({
+      where: { opportunityId },
+    });
+
+    res.status(200).json({ opportunityId, candidatosCount: count });
+  } catch (error) {
+    console.error("Erro ao contar candidatos:", error);
+    res.status(500).send("Erro interno ao contar candidatos.");
   }
 }

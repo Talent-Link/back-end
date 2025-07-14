@@ -12,6 +12,7 @@ import {
   activateOpportunity,
   deactivateOpportunity,
   getOpportunitiesByRecruiter,
+  numeroCandidatosPorOportunidade
 } from "../controllers/opportunityController";
 import { ensureToken, onlyRH } from "../middlewares/jwtAuth";
 
@@ -49,6 +50,9 @@ router.patch("/:id/activate", ensureToken, onlyRH, activateOpportunity);
 router.patch("/:id/deactivate", ensureToken, onlyRH, deactivateOpportunity);
 
 router.get("/rh", ensureToken, onlyRH, getOpportunitiesByRecruiter);
+
+// GET /opportunities/:id/candidates-count → só RH pode ver número de candidatos
+router.get("/:id/candidates-count", ensureToken, onlyRH, numeroCandidatosPorOportunidade);
 
 
 export default router;
