@@ -54,7 +54,8 @@ export async function getOpportunityById(
   }
 }
 
-// Função para criar oportunidade com campo de requisitos
+
+// Função ideal para criar oportunidade com campos de requisitos e benefícios
 export async function createOpportunity(
   req: Request,
   res: Response
@@ -71,11 +72,13 @@ export async function createOpportunity(
       benefits,
     } = req.body;
 
+    // Validação de permissão
     if (!user || user.userType !== "RH") {
       res.status(403).send("Apenas RH pode criar oportunidades.");
       return;
     }
 
+    // Validação de campos obrigatórios
     if (!title || !description || !location || !companyId) {
       res
         .status(400)
@@ -83,6 +86,7 @@ export async function createOpportunity(
       return;
     }
 
+    // Verifica se a empresa existe e pertence ao RH autenticado
     const company = await prisma.company.findUnique({
       where: { id: companyId },
     });
@@ -92,6 +96,7 @@ export async function createOpportunity(
       return;
     }
 
+    // Se formulário for enviado, valida a propriedade
     if (formId) {
       const form = await prisma.form.findUnique({ where: { id: formId } });
       if (!form || form.recruiterId !== user.id) {
@@ -100,20 +105,14 @@ export async function createOpportunity(
       }
     }
 
+    // Criação dos dados com requisitos e benefícios como JSON
     const data: any = {
       title,
       description,
       location,
       companyId,
-      requirements: Array.isArray(requirements)
-        ? JSON.stringify(requirements)
-        : JSON.stringify(
-            (requirements as string).split(";").map((s) => s.trim())
-          ),
-
-      benefits: Array.isArray(benefits)
-        ? JSON.stringify(benefits)
-        : JSON.stringify((benefits as string).split(";").map((s) => s.trim())),
+      requirements: JSON.stringify(requirements ?? []),
+      benefits: JSON.stringify(benefits ?? []),
     };
 
     if (formId) {
@@ -127,6 +126,7 @@ export async function createOpportunity(
     res.status(500).send("Erro interno ao criar oportunidade.");
   }
 }
+
 
 export async function getResponsesByOpportunity(
   req: Request,
