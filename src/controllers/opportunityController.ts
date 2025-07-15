@@ -45,15 +45,16 @@ export async function getOpportunityById(
 
     res.status(200).json({
       ...opportunity,
-      requirements: JSON.parse(opportunity.requirements ?? "[]"),
-      benefits: JSON.parse(opportunity.benefits ?? "[]"),
+      requirements: (opportunity.requirements ?? "")
+        .split("\n")
+        .filter(Boolean),
+      benefits: (opportunity.benefits ?? "").split("\n").filter(Boolean),
     });
   } catch (error) {
     console.error("Erro ao buscar oportunidade:", error);
     res.status(500).send("Erro interno ao buscar oportunidade.");
   }
 }
-
 
 // Função ideal para criar oportunidade com campos de requisitos e benefícios
 export async function createOpportunity(
@@ -111,8 +112,8 @@ export async function createOpportunity(
       description,
       location,
       companyId,
-      requirements: JSON.stringify(requirements ?? []),
-      benefits: JSON.stringify(benefits ?? []),
+      requirements: requirements || "", // Armazena a string bruta
+      benefits: benefits || "", // Armazena a string bruta
     };
 
     if (formId) {
@@ -126,7 +127,6 @@ export async function createOpportunity(
     res.status(500).send("Erro interno ao criar oportunidade.");
   }
 }
-
 
 export async function getResponsesByOpportunity(
   req: Request,
