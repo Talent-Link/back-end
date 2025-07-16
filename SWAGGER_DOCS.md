@@ -84,13 +84,13 @@ A documentação completa da API está disponível através do Swagger UI:
      bearerFormat: JWT
    ```
 
-<!-- 2. **Session Cookie**
+2. **Session Cookie**
    ```yaml
    sessionAuth:
      type: apiKey
      in: cookie
      name: connect.sid
-   ``` -->
+   ```
 
 ## Recursos Adicionais
 
