@@ -1,20 +1,19 @@
 import express from "express";
 import session from "express-session";
-import passport from "./config/passport";
+import passport from "./shared/config/passport";
 import dotenv from "dotenv";
 import cors from "cors";
-import { requestLogger } from "./middlewares/requestLogger";
-import { errorHandler } from "./middlewares/errorMiddleware";
-import authRoutes from "./routes/authRoutes";
-import emailAuthRouter from "./routes/emailAuthRouter";
-import formRouter from "./routes/formRoutes";
-import responseFormRouter from "./routes/responseFormRouter";
-import talentRoutes from "./routes/talentRouter";
-import reportRoutes from "./routes/reportRoutes";
-import feedbackRouter from "./routes/feedbackRouter";
-import companyRouter from "./routes/companyRouter";
-import opportunityRoutes from "./routes/oportunityRoutes";
-import bankTalentsRouter from "./routes/bankTalentsRouter";
+import { requestLogger } from "./shared/middlewares/requestLogger";
+import { errorHandler } from "./shared/middlewares/errorMiddleware";
+import { setupSwagger } from "./shared/config/swagger";
+import { authRoutes, emailAuthRouter } from "./domains/auth";
+import { userRoutes } from "./domains/user";
+import { formRouter, responseFormRouter } from "./domains/form";
+import { talentRoutes, bankTalentsRouter } from "./domains/talent";
+import { reportRoutes } from "./domains/report";
+import { feedbackRouter } from "./domains/notification";
+import { companyRouter } from "./domains/company";
+import { opportunityRoutes } from "./domains/opportunity";
 
 dotenv.config();
 
@@ -47,6 +46,7 @@ app.use(passport.session());
 
 app.use("/auth", authRoutes);
 app.use("/auth/email", emailAuthRouter);
+app.use("/users", userRoutes);
 app.use("/forms", formRouter);
 app.use("/candidate", responseFormRouter);
 app.use("/talents", talentRoutes);
@@ -56,8 +56,11 @@ app.use("/empresa", companyRouter);
 app.use("/opportunities", opportunityRoutes);
 app.use("/bank-talents", bankTalentsRouter);
 
+// Swagger Documentation
+setupSwagger(app);
+
 app.get("/", (req, res) => {
-  res.send("🚀 TalentLink API rodando com sucesso!");
+  res.send("🚀 TalentLink API rodando com sucesso! 📚 Documentação disponível em /api-docs");
 });
 
 app.use(errorHandler);
