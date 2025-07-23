@@ -39,7 +39,7 @@ export function handleGoogleCallback(req: Request, res: Response): void {
       userType: user.userType,
     },
     JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "2d" }
   );
 
   const userData = {
