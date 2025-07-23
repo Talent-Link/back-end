@@ -49,40 +49,94 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     userType: user.userType
   };
 
-  // Detecta se está sendo aberto em popup
-  const isPopup = req.query.popup === 'true' || req.get('Referer')?.includes('popup');
+  // Detecta se veio de popup (via parâmetro ou referer)
+  const isPopup = req.query.popup === 'true';
   
   if (isPopup) {
-    // Se é popup, envia dados via postMessage e fecha
+    // Se é popup, envia dados para a janela pai e fecha
     res.send(`
+      <!DOCTYPE html>
       <html>
         <head>
           <title>Autenticação Concluída</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              margin: 0;
+              background: #f5f5f5;
+            }
+            .container {
+              text-align: center;
+              background: white;
+              padding: 30px;
+              border-radius: 10px;
+              box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            .success {
+              color: #4CAF50;
+              font-size: 20px;
+              margin-bottom: 15px;
+            }
+            .spinner {
+              border: 3px solid #f3f3f3;
+              border-top: 3px solid #4CAF50;
+              border-radius: 50%;
+              width: 20px;
+              height: 20px;
+              animation: spin 1s linear infinite;
+              margin: 15px auto;
+            }
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          </style>
         </head>
-        <body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5;">
-          <div style="text-align: center; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <h2 style="color: #4CAF50; margin-bottom: 20px;">✅ Login Realizado!</h2>
-            <p style="color: #666;">Redirecionando...</p>
+        <body>
+          <div class="container">
+            <div class="success">✅ Conta selecionada!</div>
+            <p>Redirecionando...</p>
+            <div class="spinner"></div>
           </div>
           
           <script>
-            // Envia dados para a janela pai
-            if (window.opener) {
-              window.opener.postMessage({
-                token: '${token}',
-                user: ${JSON.stringify(userData)}
-              }, '${process.env.FRONTEND_URL || 'http://localhost:3000'}');
-              window.close();
+            const token = '${token}';
+            const user = ${JSON.stringify(userData)};
+            
+            // Envia dados para a janela pai e fecha o popup
+            if (window.opener && !window.opener.closed) {
+              try {
+                window.opener.postMessage({
+                  type: 'GOOGLE_AUTH_SUCCESS',
+                  token: token,
+                  user: user
+                }, '${process.env.FRONTEND_URL || 'http://localhost:3000'}');
+                
+                // Aguarda um pouco e fecha o popup
+                setTimeout(() => {
+                  window.close();
+                }, 1000);
+              } catch (error) {
+                console.error('Erro ao comunicar com janela pai:', error);
+                // Se falhar, redireciona no próprio popup
+                window.location.href = '${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=' + 
+                  encodeURIComponent(token) + '&user=' + encodeURIComponent(JSON.stringify(user));
+              }
             } else {
-              // Fallback: redireciona normalmente
-              window.location.href = '${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}';
+              // Fallback se não conseguir comunicar com o pai
+              window.location.href = '${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=' + 
+                encodeURIComponent(token) + '&user=' + encodeURIComponent(JSON.stringify(user));
             }
           </script>
         </body>
       </html>
     `);
   } else {
-    // Se não é popup, redireciona normalmente para o AuthCallback
+    // Se não é popup, redireciona normalmente
     const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
     res.redirect(frontendUrl);
   }
