@@ -1206,7 +1206,7 @@
 
 /**
  * @swagger
- * /email-auth/register:
+ * /auth/email/register:
  *   post:
  *     tags: [Autenticação]
  *     summary: Registro com email e senha
@@ -1261,7 +1261,7 @@
 
 /**
  * @swagger
- * /email-auth/login:
+ * /auth/email/login:
  *   post:
  *     tags: [Autenticação]
  *     summary: Login com email e senha
@@ -1309,7 +1309,7 @@
 
 /**
  * @swagger
- * /email-auth/confirm:
+ * /auth/email/confirm:
  *   get:
  *     tags: [Autenticação]
  *     summary: Confirmar email
@@ -1613,7 +1613,7 @@
 
 /**
  * @swagger
- * /response-form/responses:
+ * /candidate/responses:
  *   post:
  *     tags: [Respostas]
  *     summary: Submeter resposta do formulário
@@ -1663,7 +1663,7 @@
 
 /**
  * @swagger
- * /response-form/responses/{formId}:
+ * /candidate/responses/{formId}:
  *   get:
  *     tags: [Respostas]
  *     summary: Obter respostas do formulário
@@ -1703,7 +1703,7 @@
 
 /**
  * @swagger
- * /response-form/{id}/responded:
+ * /candidate/{id}/responded:
  *   get:
  *     tags: [Respostas]
  *     summary: Verificar se candidato respondeu
@@ -1896,7 +1896,7 @@
 
 /**
  * @swagger
- * /talent/candidates:
+ * /talents/candidates:
  *   get:
  *     tags: [Talentos]
  *     summary: Listar todos os candidatos
@@ -1914,7 +1914,7 @@
 
 /**
  * @swagger
- * /talent/candidates/{id}:
+ * /talents/candidates/{id}:
  *   get:
  *     tags: [Talentos]
  *     summary: Obter candidato por ID

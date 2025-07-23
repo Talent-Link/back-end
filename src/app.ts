@@ -65,6 +65,4 @@ app.get("/", (req, res) => {
 
 app.use(errorHandler);
 
-app.use("/talent-bank", bankTalentsRouter);
-
 export default app;

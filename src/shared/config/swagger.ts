@@ -9,10 +9,7 @@ const options = {
       title: 'TalentLink API',
       version: '1.0.0',
       description: 'API completa para plataforma de gestão de talentos e oportunidades',
-      contact: {
-        name: 'TalentLink Team',
-        email: 'contato@talentlink.com'
-      },
+    
       servers: [
         {
           url: 'http://localhost:4000',
