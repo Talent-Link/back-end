@@ -42,61 +42,16 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     { expiresIn: "7d" }
   );
 
-  // Verifica se a requisição vem do frontend
-  const referer = req.get('Referer');
-  const state = req.query.state as string;
-  const isFromFrontend = (referer && referer.includes('localhost:3000')) || state === 'frontend';
+  // Sempre redireciona para o frontend com o token e dados do usuário
+  // O frontend (AuthCallback) vai decidir para onde redirecionar baseado no userType
+  const frontendUrl = `http://localhost:3000/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    userType: user.userType
+  }))}`;
   
-  if (isFromFrontend) {
-    // Redireciona para o frontend com o token como parâmetro
-    const frontendUrl = `http://localhost:3000/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      userType: user.userType
-    }))}`;
-    
-    return res.redirect(frontendUrl);
-  }
-
-  // Se não é do frontend, mostra a tela com o token (para testes diretos)
-  res.send(`
-    <html>
-      <body style="font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5;">
-        <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #4CAF50; text-align: center;">🎉 Login Realizado com Sucesso!</h2>
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="margin-top: 0;">👤 Dados do Usuário:</h3>
-            <p><strong>Nome:</strong> ${user.name}</p>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <p><strong>Tipo:</strong> ${user.userType}</p>
-          </div>
-          <div style="background: #e3f2fd; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #1976d2;">🔑 Seu Token JWT:</h3>
-            <p style="word-break: break-all; font-family: monospace; background: white; padding: 15px; border-radius: 5px; border: 1px solid #ccc;">
-              ${token}
-            </p>
-            <button onclick="copyToken()" style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-              📋 Copiar Token
-            </button>
-          </div>
-          <div style="background: #fff3e0; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h4 style="margin-top: 0; color: #f57c00;">📝 Como usar:</h4>
-            <p>Use este token no cabeçalho <code>Authorization: Bearer SEU_TOKEN</code> nas suas requisições.</p>
-            <p><strong>Para Frontend:</strong> Use a URL com <code>?state=frontend</code></p>
-          </div>
-        </div>
-        <script>
-          function copyToken() {
-            const token = "${token}";
-            navigator.clipboard.writeText(token).then(function() {
-              alert('Token copiado para a área de transferência!');
-            });
-          }
-        </script>
-      </body>
-    </html>
-  `);
+  res.redirect(frontendUrl);
 }
 
 const blacklistedTokens = new Set<string>();
