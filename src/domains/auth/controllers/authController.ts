@@ -39,19 +39,53 @@ export function handleGoogleCallback(req: Request, res: Response): void {
       userType: user.userType,
     },
     JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "1d" }
   );
 
-  // Sempre redireciona para o frontend com o token e dados do usuário
-  // O frontend (AuthCallback) vai decidir para onde redirecionar baseado no userType
-  const frontendUrl = `http://localhost:3000/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+  const userData = {
     id: user.id,
     email: user.email,
     name: user.name,
     userType: user.userType
-  }))}`;
+  };
+
+  // Detecta se está sendo aberto em popup
+  const isPopup = req.query.popup === 'true' || req.get('Referer')?.includes('popup');
   
-  res.redirect(frontendUrl);
+  if (isPopup) {
+    // Se é popup, envia dados via postMessage e fecha
+    res.send(`
+      <html>
+        <head>
+          <title>Autenticação Concluída</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5;">
+          <div style="text-align: center; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="color: #4CAF50; margin-bottom: 20px;">✅ Login Realizado!</h2>
+            <p style="color: #666;">Redirecionando...</p>
+          </div>
+          
+          <script>
+            // Envia dados para a janela pai
+            if (window.opener) {
+              window.opener.postMessage({
+                token: '${token}',
+                user: ${JSON.stringify(userData)}
+              }, '${process.env.FRONTEND_URL || 'http://localhost:3000'}');
+              window.close();
+            } else {
+              // Fallback: redireciona normalmente
+              window.location.href = '${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}';
+            }
+          </script>
+        </body>
+      </html>
+    `);
+  } else {
+    // Se não é popup, redireciona normalmente para o AuthCallback
+    const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
+    res.redirect(frontendUrl);
+  }
 }
 
 const blacklistedTokens = new Set<string>();
