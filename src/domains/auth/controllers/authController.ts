@@ -42,6 +42,24 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     { expiresIn: "7d" }
   );
 
+  // Verifica se a requisição vem do frontend
+  const referer = req.get('Referer');
+  const state = req.query.state as string;
+  const isFromFrontend = (referer && referer.includes('localhost:3000')) || state === 'frontend';
+  
+  if (isFromFrontend) {
+    // Redireciona para o frontend com o token como parâmetro
+    const frontendUrl = `http://localhost:3000/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      userType: user.userType
+    }))}`;
+    
+    return res.redirect(frontendUrl);
+  }
+
+  // Se não é do frontend, mostra a tela com o token (para testes diretos)
   res.send(`
     <html>
       <body style="font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5;">
@@ -65,6 +83,7 @@ export function handleGoogleCallback(req: Request, res: Response): void {
           <div style="background: #fff3e0; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h4 style="margin-top: 0; color: #f57c00;">📝 Como usar:</h4>
             <p>Use este token no cabeçalho <code>Authorization: Bearer SEU_TOKEN</code> nas suas requisições.</p>
+            <p><strong>Para Frontend:</strong> Use a URL com <code>?state=frontend</code></p>
           </div>
         </div>
         <script>
