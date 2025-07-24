@@ -86,31 +86,74 @@ export async function getDashboardMetrics(req: Request, res: Response): Promise<
       });
     }
 
-    // 📋 STATUS DOS CANDIDATOS (baseado nas notificações)
-    const statusCandidatos = await prisma.notification.groupBy({
-      by: ['status'],
+    // 📋 STATUS DOS CANDIDATOS (gráfico de pizza)
+    // Busca todas as candidaturas da empresa para determinar status
+    const todasCandidaturas = await prisma.response.findMany({
       where: {
-        userId: user.id,
-        status: {
-          not: null
+        opportunity: {
+          companyId: userCompany.id
         }
       },
-      _count: {
-        status: true
+      include: {
+        notifications: {
+          where: {
+            userId: user.id
+          },
+          select: {
+            status: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1 // Pega o status mais recente
+        }
       }
     });
 
-    // Mapeia os status para os nomes corretos
-    const statusMapping: { [key: string]: string } = {
-      'APPROVED': 'Approved',
-      'REJECTED': 'Rejected',
-      'PENDING': 'Pending'
-    };
+    // Conta os status dos candidatos
+    let aceitos = 0;
+    let rejeitados = 0;
+    let emProgresso = 0;
 
-    const statusData = statusCandidatos.map(item => ({
-      status: statusMapping[item.status || ''] || item.status || 'Unknown',
-      count: item._count.status
-    }));
+    todasCandidaturas.forEach(candidatura => {
+      const ultimaNotificacao = candidatura.notifications[0];
+      
+      if (ultimaNotificacao && ultimaNotificacao.status) {
+        switch (ultimaNotificacao.status) {
+          case 'APPROVED':
+            aceitos++;
+            break;
+          case 'REJECTED':
+            rejeitados++;
+            break;
+          default:
+            emProgresso++;
+            break;
+        }
+      } else {
+        // Se não tem notificação, está em progresso
+        emProgresso++;
+      }
+    });
+
+    // Dados para o gráfico de pizza
+    const statusData = [
+      {
+        status: 'Aceitos',
+        count: aceitos,
+        color: '#4CAF50' // Verde
+      },
+      {
+        status: 'Rejeitados', 
+        count: rejeitados,
+        color: '#F44336' // Vermelho
+      },
+      {
+        status: 'Em Progresso',
+        count: emProgresso,
+        color: '#FF9800' // Laranja
+      }
+    ];
 
     // 📊 RESPOSTA FINAL
     const dashboardData = {

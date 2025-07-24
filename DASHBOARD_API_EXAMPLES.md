@@ -54,9 +54,9 @@ curl -X GET "http://localhost:4000/dashboard/metrics" \
       {"month": "Mar", "applications": 28}
     ],
     "statusCandidatos": [
-      {"status": "Approved", "count": 24},
-      {"status": "Rejected", "count": 15},
-      {"status": "Pending", "count": 8}
+      {"status": "Aceitos", "count": 24, "color": "#4CAF50"},
+      {"status": "Rejeitados", "count": 15, "color": "#F44336"},
+      {"status": "Em Progresso", "count": 8, "color": "#FF9800"}
     ]
   }
 }
@@ -183,4 +183,18 @@ curl -X GET "http://localhost:4000/dashboard/vaga/clxyz123456789" \
 - **Apenas usuários RH** podem acessar estas rotas
 - Todas as métricas são **baseadas na empresa** do usuário RH logado
 - Os dados de **candidaturas mensais** mostram os últimos 6 meses
-- Os **status dos candidatos** são baseados nas notificações do sistema
+- Os **status dos candidatos** são determinados pela última notificação:
+
+### 🎯 Status dos Candidatos (Gráfico de Pizza):
+- **🟢 Aceitos** (`#4CAF50`): Candidatos com status "APPROVED" na última notificação
+- **🔴 Rejeitados** (`#F44336`): Candidatos com status "REJECTED" na última notificação  
+- **🟠 Em Progresso** (`#FF9800`): Candidatos sem notificação ou com outros status
+
+### 📊 Estrutura do Gráfico:
+```json
+{
+  "status": "Aceitos|Rejeitados|Em Progresso",
+  "count": 24,
+  "color": "#4CAF50" // Cor pronta para usar no frontend
+}
+```

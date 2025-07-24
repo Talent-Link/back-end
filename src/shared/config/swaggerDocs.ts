@@ -2230,10 +2230,15 @@
  *                 properties:
  *                   status:
  *                     type: string
- *                     example: "Approved"
+ *                     enum: ['Aceitos', 'Rejeitados', 'Em Progresso']
+ *                     example: "Aceitos"
  *                   count:
  *                     type: number
  *                     example: 24
+ *                   color:
+ *                     type: string
+ *                     example: "#4CAF50"
+ *                     description: "Cor hexadecimal para o gráfico de pizza"
  *     CandidatoQualificado:
  *       type: object
  *       properties:
