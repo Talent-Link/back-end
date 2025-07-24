@@ -49,21 +49,14 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     userType: user.userType
   };
 
-  // 🔑 VERIFICAR POPUP pelo state (mais confiável que sessão)
   const state = (req.query.state as string) || '';
   const isPopup = state.includes('popup=true') || (req as any).session?.isPopup === true;
   
-  // Limpa o estado da sessão após usar
   if ((req as any).session?.isPopup) {
     delete (req as any).session.isPopup;
-    console.log('🎯 POPUP CONFIRMADO via sessão - Estado limpo');
   }
   
-  console.log('🎯 Estado do popup - State:', state, 'Sessão:', (req as any).session?.isPopup, 'Final:', isPopup);
-  
   if (isPopup) {
-    console.log('✅ MODO POPUP: Enviando postMessage (detectado via state)');
-    // ✅ POPUP: Envia postMessage e fecha, NÃO redireciona
     res.send(`
       <!DOCTYPE html>
       <html>
@@ -116,8 +109,6 @@ export function handleGoogleCallback(req: Request, res: Response): void {
           <script>
             const token = '${token}';
             const user = ${JSON.stringify(userData)};
-            
-            // ENVIA dados para a janela pai
             if (window.opener && !window.opener.closed) {
               try {
                 window.opener.postMessage({
@@ -125,18 +116,13 @@ export function handleGoogleCallback(req: Request, res: Response): void {
                   token: token,
                   user: user
                 }, '${process.env.FRONTEND_URL || 'http://localhost:3000'}');
-                
-                // Fecha o popup após enviar
                 setTimeout(() => {
                   window.close();
                 }, 1500);
               } catch (error) {
-                console.error('Erro ao comunicar com janela pai:', error);
-                // Se falhar, mostra erro
                 document.body.innerHTML = '<div style="text-align: center; padding: 20px;"><h2 style="color: red;">Erro</h2><p>Feche esta janela e tente novamente.</p></div>';
               }
             } else {
-              // Se não conseguir acessar a janela pai
               document.body.innerHTML = '<div style="text-align: center; padding: 20px;"><h2 style="color: red;">Erro</h2><p>Feche esta janela.</p></div>';
             }
           </script>
@@ -144,8 +130,6 @@ export function handleGoogleCallback(req: Request, res: Response): void {
       </html>
     `);
   } else {
-    console.log('🔄 MODO NORMAL: Redirecionando');
-    // ✅ NÃO É POPUP: Redireciona normalmente
     const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
     res.redirect(frontendUrl);
   }

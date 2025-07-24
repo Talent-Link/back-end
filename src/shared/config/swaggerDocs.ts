@@ -2151,4 +2151,286 @@
  *               $ref: '#/components/schemas/Error'
  */
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     DashboardMetrics:
+ *       type: object
+ *       properties:
+ *         metrics:
+ *           type: object
+ *           properties:
+ *             totalCandidaturas:
+ *               type: object
+ *               properties:
+ *                 value:
+ *                   type: number
+ *                   example: 245
+ *                 change:
+ *                   type: string
+ *                   example: "+12%"
+ *                 period:
+ *                   type: string
+ *                   example: "from last period"
+ *             candidatosQualificados:
+ *               type: object
+ *               properties:
+ *                 value:
+ *                   type: number
+ *                   example: 89
+ *                 change:
+ *                   type: string
+ *                   example: "+8%"
+ *                 period:
+ *                   type: string
+ *                   example: "from last period"
+ *             taxaAprovacao:
+ *               type: object
+ *               properties:
+ *                 value:
+ *                   type: number
+ *                   example: 36
+ *                 change:
+ *                   type: string
+ *                   example: "+5%"
+ *                 period:
+ *                   type: string
+ *                   example: "from last period"
+ *             vagasAtivas:
+ *               type: object
+ *               properties:
+ *                 value:
+ *                   type: number
+ *                   example: 12
+ *                 change:
+ *                   type: string
+ *                   example: "+3%"
+ *                 period:
+ *                   type: string
+ *                   example: "from last period"
+ *         charts:
+ *           type: object
+ *           properties:
+ *             candidaturasMensais:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   month:
+ *                     type: string
+ *                     example: "Jan"
+ *                   applications:
+ *                     type: number
+ *                     example: 35
+ *             statusCandidatos:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   status:
+ *                     type: string
+ *                     example: "Approved"
+ *                   count:
+ *                     type: number
+ *                     example: 24
+ *     CandidatoQualificado:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: "clxyz123456789"
+ *         candidateId:
+ *           type: string
+ *           example: "clxyz987654321"
+ *         answers:
+ *           type: object
+ *           example: {"experiencia": "5 anos", "skills": ["JavaScript", "React"]}
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         opportunityId:
+ *           type: string
+ *           example: "clxyz456789123"
+ *         candidate:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               example: "clxyz987654321"
+ *             name:
+ *               type: string
+ *               example: "Maria Silva"
+ *             email:
+ *               type: string
+ *               example: "maria@exemplo.com"
+ *             photoUrl:
+ *               type: string
+ *               nullable: true
+ *               example: "https://example.com/photo.jpg"
+ *         opportunity:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               example: "clxyz456789123"
+ *             title:
+ *               type: string
+ *               example: "Desenvolvedor Frontend"
+ *             description:
+ *               type: string
+ *               example: "Vaga para desenvolvedor React experiente"
+ */
+
+/**
+ * @swagger
+ * /dashboard/metrics:
+ *   get:
+ *     summary: Obter métricas do dashboard RH
+ *     description: Retorna métricas completas do dashboard para usuários RH, incluindo total de candidaturas, taxa de aprovação, vagas ativas e gráficos
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Métricas do dashboard retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DashboardMetrics'
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas usuários RH podem acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Empresa não encontrada para o usuário RH
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /dashboard/candidatos:
+ *   get:
+ *     summary: Listar candidatos qualificados
+ *     description: Retorna uma lista dos últimos 20 candidatos qualificados para as vagas da empresa do RH
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de candidatos qualificados retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CandidatoQualificado'
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas usuários RH podem acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Empresa não encontrada para o usuário RH
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /dashboard/vaga/{vagaId}:
+ *   get:
+ *     summary: Obter detalhes de uma vaga específica
+ *     description: Retorna detalhes completos de uma vaga, incluindo estatísticas e candidatos
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: vagaId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da vaga
+ *         example: "clxyz123456789"
+ *     responses:
+ *       200:
+ *         description: Detalhes da vaga retornados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   example: "clxyz123456789"
+ *                 title:
+ *                   type: string
+ *                   example: "Desenvolvedor Frontend"
+ *                 description:
+ *                   type: string
+ *                   example: "Vaga para desenvolvedor React experiente"
+ *                 location:
+ *                   type: string
+ *                   example: "São Paulo, SP"
+ *                 isActive:
+ *                   type: boolean
+ *                   example: true
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 responses:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CandidatoQualificado'
+ *                 estatisticas:
+ *                   type: object
+ *                   properties:
+ *                     totalCandidatos:
+ *                       type: number
+ *                       example: 15
+ *                     ultimaCandidatura:
+ *                       type: string
+ *                       format: date-time
+ *                       nullable: true
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas usuários RH podem acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Vaga não encontrada ou não pertence ao usuário RH
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 export {};

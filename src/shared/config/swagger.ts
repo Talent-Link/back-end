@@ -21,6 +21,44 @@ const options = {
         }
       ]
     },
+    tags: [
+      {
+        name: 'Authentication',
+        description: 'Autenticação e autorização de usuários'
+      },
+      {
+        name: 'Users',
+        description: 'Gerenciamento de usuários'
+      },
+      {
+        name: 'Companies',
+        description: 'Gerenciamento de empresas'
+      },
+      {
+        name: 'Opportunities',
+        description: 'Gerenciamento de vagas e oportunidades'
+      },
+      {
+        name: 'Forms',
+        description: 'Formulários e respostas'
+      },
+      {
+        name: 'Talents',
+        description: 'Banco de talentos'
+      },
+      {
+        name: 'Reports',
+        description: 'Relatórios e análises'
+      },
+      {
+        name: 'Dashboard',
+        description: 'Métricas e dashboard para RH'
+      },
+      {
+        name: 'Notifications',
+        description: 'Notificações e feedbacks'
+      }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
