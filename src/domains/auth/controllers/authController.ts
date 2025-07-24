@@ -49,10 +49,19 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     userType: user.userType
   };
 
-  // 🔑 DETECÇÃO DE POPUP - Esta é a parte crucial!
-  const isPopup = req.query.popup === 'true';
+  // 🔑 DETECÇÃO DE POPUP - Verifica sessão primeiro, depois query
+  const isPopup = (req as any).session?.isPopup === true || req.query.popup === 'true';
+  
+  // Limpa o estado da sessão após usar
+  if ((req as any).session?.isPopup) {
+    delete (req as any).session.isPopup;
+    console.log('🎯 POPUP CONFIRMADO via sessão - Estado limpo');
+  }
+  
+  console.log('🎯 Estado do popup - Sessão:', (req as any).session?.isPopup, 'Query:', req.query.popup, 'Final:', isPopup);
   
   if (isPopup) {
+    console.log('✅ MODO POPUP: Enviando postMessage');
     // ✅ POPUP: Envia postMessage e fecha, NÃO redireciona
     res.send(`
       <!DOCTYPE html>
@@ -134,6 +143,7 @@ export function handleGoogleCallback(req: Request, res: Response): void {
       </html>
     `);
   } else {
+    console.log('🔄 MODO NORMAL: Redirecionando');
     // ✅ NÃO É POPUP: Redireciona normalmente
     const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
     res.redirect(frontendUrl);
