@@ -35,33 +35,45 @@ function authenticateUser(req: any, res: any, next: any): void {
   return isAuthenticated(req, res, next);
 }
 
-// Início do login com Google (com detecção de popup)
+// Início do login com Google (com detecção de popup via state)
 router.get(
   "/google/RH",
   (req: any, res, next) => {
-    // 🔑 SALVA ESTADO DO POPUP NA SESSÃO
+    // 🔑 SALVA ESTADO DO POPUP NA SESSÃO E NO STATE
     const isPopup = req.query.popup === 'true';
     if (isPopup) {
       req.session.isPopup = true;
       console.log('🎯 POPUP DETECTADO: RH - Salvando na sessão');
     }
-    next();
-  },
-  passport.authenticate("google-RH", { scope: ["profile", "email"] })
+    
+    // 🔑 CRIA STATE PARA PERSISTIR DURANTE OAuth
+    const state = isPopup ? 'popup=true' : 'popup=false';
+    
+    passport.authenticate("google-RH", { 
+      scope: ["profile", "email"],
+      state: state  // ← PERSISTIR popup durante OAuth
+    })(req, res, next);
+  }
 );
 
 router.get(
   "/google/CANDIDATO",
   (req: any, res, next) => {
-    // 🔑 SALVA ESTADO DO POPUP NA SESSÃO
+    // 🔑 SALVA ESTADO DO POPUP NA SESSÃO E NO STATE
     const isPopup = req.query.popup === 'true';
     if (isPopup) {
       req.session.isPopup = true;
       console.log('🎯 POPUP DETECTADO: CANDIDATO - Salvando na sessão');
     }
-    next();
-  },
-  passport.authenticate("google-CANDIDATO", { scope: ["profile", "email"] })
+    
+    // 🔑 CRIA STATE PARA PERSISTIR DURANTE OAuth
+    const state = isPopup ? 'popup=true' : 'popup=false';
+    
+    passport.authenticate("google-CANDIDATO", { 
+      scope: ["profile", "email"],
+      state: state  // ← PERSISTIR popup durante OAuth
+    })(req, res, next);
+  }
 );
 
 // Callback do Google

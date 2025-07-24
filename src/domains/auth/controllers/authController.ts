@@ -49,8 +49,9 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     userType: user.userType
   };
 
-  // 🔑 DETECÇÃO DE POPUP - Verifica sessão primeiro, depois query
-  const isPopup = (req as any).session?.isPopup === true || req.query.popup === 'true';
+  // 🔑 VERIFICAR POPUP pelo state (mais confiável que sessão)
+  const state = (req.query.state as string) || '';
+  const isPopup = state.includes('popup=true') || (req as any).session?.isPopup === true;
   
   // Limpa o estado da sessão após usar
   if ((req as any).session?.isPopup) {
@@ -58,10 +59,10 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     console.log('🎯 POPUP CONFIRMADO via sessão - Estado limpo');
   }
   
-  console.log('🎯 Estado do popup - Sessão:', (req as any).session?.isPopup, 'Query:', req.query.popup, 'Final:', isPopup);
+  console.log('🎯 Estado do popup - State:', state, 'Sessão:', (req as any).session?.isPopup, 'Final:', isPopup);
   
   if (isPopup) {
-    console.log('✅ MODO POPUP: Enviando postMessage');
+    console.log('✅ MODO POPUP: Enviando postMessage (detectado via state)');
     // ✅ POPUP: Envia postMessage e fecha, NÃO redireciona
     res.send(`
       <!DOCTYPE html>
