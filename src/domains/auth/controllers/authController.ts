@@ -49,16 +49,16 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     userType: user.userType
   };
 
-  // Detecta se veio de popup (via parâmetro ou referer)
+  // 🔑 DETECÇÃO DE POPUP - Esta é a parte crucial!
   const isPopup = req.query.popup === 'true';
   
   if (isPopup) {
-    // Se é popup, envia dados para a janela pai e fecha
+    // ✅ POPUP: Envia postMessage e fecha, NÃO redireciona
     res.send(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Autenticação Concluída</title>
+          <title>Conta Selecionada</title>
           <style>
             body {
               font-family: Arial, sans-serif;
@@ -99,7 +99,7 @@ export function handleGoogleCallback(req: Request, res: Response): void {
         <body>
           <div class="container">
             <div class="success">✅ Conta selecionada!</div>
-            <p>Redirecionando...</p>
+            <p>Fechando popup...</p>
             <div class="spinner"></div>
           </div>
           
@@ -107,37 +107,35 @@ export function handleGoogleCallback(req: Request, res: Response): void {
             const token = '${token}';
             const user = ${JSON.stringify(userData)};
             
-            // Envia dados para a janela pai e fecha o popup
+            // ENVIA dados para a janela pai
             if (window.opener && !window.opener.closed) {
               try {
                 window.opener.postMessage({
                   type: 'GOOGLE_AUTH_SUCCESS',
                   token: token,
                   user: user
-                }, 'http://localhost:3000');
+                }, '${process.env.FRONTEND_URL || 'http://localhost:3000'}');
                 
-                // Aguarda um pouco e fecha o popup
+                // Fecha o popup após enviar
                 setTimeout(() => {
                   window.close();
-                }, 1000);
+                }, 1500);
               } catch (error) {
                 console.error('Erro ao comunicar com janela pai:', error);
-                // Se falhar, redireciona no próprio popup
-                window.location.href = 'http://localhost:3000/auth/callback?token=' + 
-                  encodeURIComponent(token) + '&user=' + encodeURIComponent(JSON.stringify(user));
+                // Se falhar, mostra erro
+                document.body.innerHTML = '<div style="text-align: center; padding: 20px;"><h2 style="color: red;">Erro</h2><p>Feche esta janela e tente novamente.</p></div>';
               }
             } else {
-              // Fallback se não conseguir comunicar com o pai
-              window.location.href = 'http://localhost:3000/auth/callback?token=' + 
-                encodeURIComponent(token) + '&user=' + encodeURIComponent(JSON.stringify(user));
+              // Se não conseguir acessar a janela pai
+              document.body.innerHTML = '<div style="text-align: center; padding: 20px;"><h2 style="color: red;">Erro</h2><p>Feche esta janela.</p></div>';
             }
           </script>
         </body>
       </html>
     `);
   } else {
-    // Se não é popup, redireciona normalmente
-    const frontendUrl = `http://localhost:3000/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
+    // ✅ NÃO É POPUP: Redireciona normalmente
+    const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
     res.redirect(frontendUrl);
   }
 }
