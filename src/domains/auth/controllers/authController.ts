@@ -114,7 +114,7 @@ export function handleGoogleCallback(req: Request, res: Response): void {
                   type: 'GOOGLE_AUTH_SUCCESS',
                   token: token,
                   user: user
-                }, '${process.env.FRONTEND_URL || 'http://localhost:3000'}');
+                }, 'http://localhost:3000');
                 
                 // Aguarda um pouco e fecha o popup
                 setTimeout(() => {
@@ -123,12 +123,12 @@ export function handleGoogleCallback(req: Request, res: Response): void {
               } catch (error) {
                 console.error('Erro ao comunicar com janela pai:', error);
                 // Se falhar, redireciona no próprio popup
-                window.location.href = '${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=' + 
+                window.location.href = 'http://localhost:3000/auth/callback?token=' + 
                   encodeURIComponent(token) + '&user=' + encodeURIComponent(JSON.stringify(user));
               }
             } else {
               // Fallback se não conseguir comunicar com o pai
-              window.location.href = '${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=' + 
+              window.location.href = 'http://localhost:3000/auth/callback?token=' + 
                 encodeURIComponent(token) + '&user=' + encodeURIComponent(JSON.stringify(user));
             }
           </script>
@@ -137,7 +137,7 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     `);
   } else {
     // Se não é popup, redireciona normalmente
-    const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
+    const frontendUrl = `http://localhost:3000/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
     res.redirect(frontendUrl);
   }
 }
