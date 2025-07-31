@@ -7,17 +7,17 @@ import prisma from "../../../shared/database/prisma";
 export async function createOrUpdateCompany(req: Request, res: Response): Promise<void> {
   try {
     const user = req.user as any; // Usuário autenticado
-    const { name, description, address } = req.body;
+    const { name, description, address, logoUrl } = req.body;
 
     // Verifica se o usuário é do tipo RH
     if (!user || user.userType !== "RH") {
-      res.status(403).send("Apenas usuários RH podem gerenciar empresas.");
+      res.status(403).json({ message: "Apenas usuários RH podem gerenciar empresas." });
       return;
     }
 
     // Verifica se os campos obrigatórios foram fornecidos
     if (!name || !address) {
-      res.status(400).send("Nome e endereço são obrigatórios.");
+      res.status(400).json({ message: "Nome e endereço são obrigatórios." });
       return;
     }
 
@@ -30,7 +30,7 @@ export async function createOrUpdateCompany(req: Request, res: Response): Promis
       // Atualiza a empresa existente
       const updatedCompany = await prisma.company.update({
         where: { recruiterId: user.id },
-        data: { name, description, address },
+        data: { name, description, address, logoUrl },
       });
       res.status(200).json(updatedCompany);
     } else {
@@ -40,6 +40,7 @@ export async function createOrUpdateCompany(req: Request, res: Response): Promis
           name,
           description,
           address,
+          logoUrl,
           recruiterId: user.id,
         },
       });
@@ -60,7 +61,7 @@ export async function getCompany(req: Request, res: Response): Promise<void> {
 
     // Verifica se o usuário é do tipo RH
     if (!user || user.userType !== "RH") {
-      res.status(403).send("Apenas usuários RH podem visualizar empresas.");
+      res.status(403).json({ message: "Apenas usuários RH podem visualizar empresas." });
       return;
     }
 
@@ -70,14 +71,14 @@ export async function getCompany(req: Request, res: Response): Promise<void> {
     });
 
     if (!company) {
-      res.status(404).send("Nenhuma empresa encontrada para este usuário.");
+      res.status(404).json({ message: "Nenhuma empresa encontrada para este usuário." });
       return;
     }
 
     res.status(200).json(company);
   } catch (error) {
     console.error("Erro ao buscar empresa:", error);
-    res.status(500).send("Erro interno ao buscar empresa.");
+    res.status(500).json({ message: "Erro interno ao buscar empresa." });
   }
 }
 
@@ -87,18 +88,110 @@ export async function listCompaniesByRecruiter(req: Request, res: Response): Pro
     const user = req.user as any;
 
     if (!user || user.userType !== "RH") {
-      res.status(403).send("Apenas RHs podem visualizar empresas.");
+      res.status(403).json({ message: "Apenas RHs podem visualizar empresas." });
       return;
     }
 
     const companies = await prisma.company.findMany({
       where: { recruiterId: user.id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, logoUrl: true },
     });
 
     res.status(200).json(companies);
   } catch (error) {
     console.error("Erro ao listar empresas do RH:", error);
-    res.status(500).send("Erro interno ao buscar empresas.");
+    res.status(500).json({ message: "Erro interno ao buscar empresas." });
+  }
+}
+
+/**
+ * Upload ou atualização da logo da empresa
+ */
+export async function uploadCompanyLogo(req: Request, res: Response): Promise<void> {
+  try {
+    const user = req.user as any;
+    const { logoUrl } = req.body;
+
+    if (!user || user.userType !== "RH") {
+      res.status(403).json({ message: "Apenas usuários RH podem fazer upload de logos." });
+      return;
+    }
+
+    if (!logoUrl) {
+      res.status(400).json({ message: "URL da logo é obrigatória." });
+      return;
+    }
+
+    // Buscar empresa existente
+    let company = await prisma.company.findUnique({
+      where: { recruiterId: user.id }
+    });
+
+    if (!company) {
+      res.status(404).json({ message: "Empresa não encontrada. Crie uma empresa primeiro." });
+      return;
+    }
+
+    const previousLogoUrl = company.logoUrl;
+
+    // Atualizar logo da empresa
+    company = await prisma.company.update({
+      where: { recruiterId: user.id },
+      data: { logoUrl }
+    });
+
+    res.json({
+      message: previousLogoUrl ? 'Logo atualizada com sucesso' : 'Logo adicionada com sucesso',
+      logoUrl: company.logoUrl,
+      previousLogoUrl: previousLogoUrl
+    });
+  } catch (error) {
+    console.error('Erro ao fazer upload da logo:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+}
+
+/**
+ * Excluir logo da empresa
+ */
+export async function deleteCompanyLogo(req: Request, res: Response): Promise<void> {
+  try {
+    const user = req.user as any;
+
+    if (!user || user.userType !== "RH") {
+      res.status(403).json({ message: "Apenas usuários RH podem excluir logos." });
+      return;
+    }
+
+    // Buscar empresa existente
+    const company = await prisma.company.findUnique({
+      where: { recruiterId: user.id }
+    });
+
+    if (!company) {
+      res.status(404).json({ message: "Empresa não encontrada." });
+      return;
+    }
+
+    if (!company.logoUrl) {
+      res.status(400).json({ message: "Nenhuma logo encontrada para excluir." });
+      return;
+    }
+
+    const deletedLogoUrl = company.logoUrl;
+
+    // Remover logo da empresa
+    await prisma.company.update({
+      where: { recruiterId: user.id },
+      data: { logoUrl: null }
+    });
+
+    res.json({
+      message: 'Logo excluída com sucesso',
+      deletedLogoUrl: deletedLogoUrl
+    });
+  } catch (error) {
+    console.error('Erro ao excluir logo:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
   }
 }
