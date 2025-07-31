@@ -20,14 +20,25 @@ dotenv.config();
 const app = express();
 
 app.use(requestLogger);
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Aumentar limite para uploads base64
 
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
+// Configuração de CORS mais flexível para produção
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "https://localhost:3000", 
+    "https://talentlink-wd88.onrender.com",
+    "https://talent-link-front.vercel.app",
+    /\.vercel\.app$/,
+    /\.onrender\.com$/
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Para suporte a browsers antigos
+};
+
+app.use(cors(corsOptions));
 
 app.use(
   session({
