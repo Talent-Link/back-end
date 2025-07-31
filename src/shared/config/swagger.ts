@@ -359,6 +359,202 @@ const options = {
               example: 500
             }
           }
+        },
+        CandidateProfile: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: 'clxyz123456789'
+            },
+            userId: {
+              type: 'string',
+              example: 'clxyz987654321'
+            },
+            phoneNumber: {
+              type: 'string',
+              nullable: true,
+              example: '+55 (11) 99999-9999'
+            },
+            resumeUrl: {
+              type: 'string',
+              nullable: true,
+              example: 'https://example.com/resume.pdf'
+            },
+            skills: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              example: ['React', 'TypeScript', 'Node.js', 'PostgreSQL']
+            },
+            experiences: {
+              type: 'array',
+              items: {
+                '$ref': '#/components/schemas/ProfessionalExperience'
+              }
+            },
+            educations: {
+              type: 'array',
+              items: {
+                '$ref': '#/components/schemas/Education'
+              }
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
+        ProfessionalExperience: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: 'clxyz123456789'
+            },
+            profileId: {
+              type: 'string',
+              example: 'clxyz987654321'
+            },
+            position: {
+              type: 'string',
+              example: 'Frontend Developer'
+            },
+            company: {
+              type: 'string',
+              example: 'Tech Solutions Inc.'
+            },
+            startDate: {
+              type: 'string',
+              format: 'date-time',
+              example: '2020-01-01T00:00:00.000Z'
+            },
+            endDate: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              example: '2023-12-31T00:00:00.000Z'
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              example: 'Developed and maintained React applications. Led a team of junior developers on multiple projects.'
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
+        ProfessionalExperienceInput: {
+          type: 'object',
+          required: ['position', 'company', 'startDate'],
+          properties: {
+            position: {
+              type: 'string',
+              example: 'Frontend Developer'
+            },
+            company: {
+              type: 'string',
+              example: 'Tech Solutions Inc.'
+            },
+            startDate: {
+              type: 'string',
+              format: 'date',
+              example: '2020-01-01'
+            },
+            endDate: {
+              type: 'string',
+              format: 'date',
+              nullable: true,
+              example: '2023-12-31'
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              example: 'Developed and maintained React applications. Led a team of junior developers on multiple projects.'
+            }
+          }
+        },
+        Education: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: 'clxyz123456789'
+            },
+            profileId: {
+              type: 'string',
+              example: 'clxyz987654321'
+            },
+            institution: {
+              type: 'string',
+              example: 'Universidade de São Paulo'
+            },
+            course: {
+              type: 'string',
+              example: 'Ciência da Computação'
+            },
+            degree: {
+              type: 'string',
+              nullable: true,
+              example: 'Bacharel'
+            },
+            startYear: {
+              type: 'integer',
+              example: 2018
+            },
+            endYear: {
+              type: 'integer',
+              nullable: true,
+              example: 2022
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
+        EducationInput: {
+          type: 'object',
+          required: ['institution', 'course', 'startYear'],
+          properties: {
+            institution: {
+              type: 'string',
+              example: 'Universidade de São Paulo'
+            },
+            course: {
+              type: 'string',
+              example: 'Ciência da Computação'
+            },
+            degree: {
+              type: 'string',
+              nullable: true,
+              example: 'Bacharel'
+            },
+            startYear: {
+              type: 'integer',
+              example: 2018
+            },
+            endYear: {
+              type: 'integer',
+              nullable: true,
+              example: 2022
+            }
+          }
         }
       }
     },

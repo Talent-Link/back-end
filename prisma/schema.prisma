@@ -23,6 +23,46 @@ model User {
   forms                  Form[]              @relation("UserForms")
   notifications          Notification[]
   responses              Response[]
+  candidateProfile       CandidateProfile?
+}
+
+model CandidateProfile {
+  id                String                  @id @default(cuid())
+  userId            String                  @unique
+  phoneNumber       String?                 // Número de telefone
+  resumeUrl         String?                 // URL do currículo em PDF
+  skills            String[]                // Array de habilidades
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiences       ProfessionalExperience[]
+  educations        Education[]
+}
+
+model ProfessionalExperience {
+  id                String           @id @default(cuid())
+  profileId         String
+  position          String           // Cargo
+  company           String           // Empresa
+  startDate         DateTime         // Data de início
+  endDate           DateTime?        // Data de fim (null se ainda trabalha)
+  description       String?          // Descrição das atividades
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  candidateProfile  CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id                String           @id @default(cuid())
+  profileId         String
+  institution       String           // Nome da instituição
+  course            String           // Nome do curso
+  degree            String?          // Grau (Bacharel, Mestre, etc.)
+  startYear         Int              // Ano de início
+  endYear           Int?             // Ano de conclusão (null se ainda cursando)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  candidateProfile  CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model FavoriteCandidate {

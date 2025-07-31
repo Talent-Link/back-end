@@ -225,32 +225,9 @@
 
 /**
  * @swagger
- * tags:
- *   - name: Autenticação
- *     description: Endpoints para autenticação e gerenciamento de sessão
- *   - name: Usuários
- *     description: Endpoints para gerenciamento de usuários
- *   - name: Empresas
- *     description: Endpoints para gerenciamento de empresas
- *   - name: Oportunidades
- *     description: Endpoints para gerenciamento de oportunidades de trabalho
- *   - name: Formulários
- *     description: Endpoints para gerenciamento de formulários e questões
- *   - name: Respostas
- *     description: Endpoints para gerenciamento de respostas de formulários
- *   - name: Notificações
- *     description: Endpoints para gerenciamento de notificações e feedback
- *   - name: Talentos
- *     description: Endpoints para gerenciamento de banco de talentos
- *   - name: Relatórios
- *     description: Endpoints para geração de relatórios
- */
-
-/**
- * @swagger
  * /auth/google/RH:
  *   get:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Inicia autenticação Google para RH
  *     description: Redireciona para o Google OAuth para autenticação como RH
  *     responses:
@@ -262,7 +239,7 @@
  * @swagger
  * /auth/google/CANDIDATO:
  *   get:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Inicia autenticação Google para Candidato
  *     description: Redireciona para o Google OAuth para autenticação como Candidato
  *     responses:
@@ -274,7 +251,7 @@
  * @swagger
  * /auth/google/RH/callback:
  *   get:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Callback da autenticação Google para RH
  *     description: Processa o retorno da autenticação Google para usuários RH
  *     responses:
@@ -286,7 +263,7 @@
  * @swagger
  * /auth/google/CANDIDATO/callback:
  *   get:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Callback da autenticação Google para Candidato
  *     description: Processa o retorno da autenticação Google para candidatos
  *     responses:
@@ -298,7 +275,7 @@
  * @swagger
  * /auth/logout:
  *   get:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Realiza logout do usuário
  *     description: Encerra a sessão do usuário autenticado
  *     security:
@@ -317,7 +294,7 @@
  * @swagger
  * /auth/me:
  *   get:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Obtém dados do usuário autenticado
  *     description: Retorna as informações do usuário atualmente autenticado
  *     security:
@@ -341,7 +318,7 @@
  * @swagger
  * /users/profile:
  *   get:
- *     tags: [Usuários]
+ *     tags: [Users]
  *     summary: Obter perfil do usuário autenticado
  *     description: Retorna os dados do perfil do usuário atualmente autenticado
  *     security:
@@ -371,7 +348,7 @@
  * @swagger
  * /users/profile:
  *   put:
- *     tags: [Usuários]
+ *     tags: [Users]
  *     summary: Atualizar perfil do usuário autenticado
  *     description: Atualiza os dados do perfil do usuário autenticado
  *     security:
@@ -419,7 +396,7 @@
  * @swagger
  * /users/stats:
  *   get:
- *     tags: [Usuários]
+ *     tags: [Users]
  *     summary: Obter estatísticas do usuário
  *     description: Retorna estatísticas relacionadas ao usuário autenticado
  *     security:
@@ -453,7 +430,7 @@
  * @swagger
  * /users/search:
  *   get:
- *     tags: [Usuários]
+ *     tags: [Users]
  *     summary: Buscar usuários (apenas RH)
  *     description: Busca usuários por critérios específicos. Disponível apenas para usuários RH.
  *     security:
@@ -532,7 +509,7 @@
  * @swagger
  * /users/{id}:
  *   get:
- *     tags: [Usuários]
+ *     tags: [Users]
  *     summary: Obter usuário específico por ID
  *     description: Retorna os dados de um usuário específico pelo seu ID
  *     security:
@@ -570,7 +547,7 @@
  * @swagger
  * /empresa:
  *   post:
- *     tags: [Empresas]
+ *     tags: [Companies]
  *     summary: Criar ou atualizar empresa
  *     description: Cria uma nova empresa ou atualiza a empresa existente do usuário RH
  *     security:
@@ -632,7 +609,7 @@
  * @swagger
  * /empresa:
  *   get:
- *     tags: [Empresas]
+ *     tags: [Companies]
  *     summary: Obter empresa do usuário RH
  *     description: Retorna as informações da empresa associada ao usuário RH autenticado
  *     security:
@@ -668,7 +645,7 @@
  * @swagger
  * /empresa/rh:
  *   get:
- *     tags: [Empresas]
+ *     tags: [Companies]
  *     summary: Listar empresas do RH
  *     description: Lista todas as empresas associadas ao usuário RH autenticado
  *     security:
@@ -707,7 +684,7 @@
  * @swagger
  * /opportunities:
  *   get:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Listar todas as oportunidades
  *     description: Retorna todas as oportunidades ativas disponíveis
  *     security:
@@ -733,7 +710,7 @@
  * @swagger
  * /opportunities/my-applications:
  *   get:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Minhas candidaturas
  *     description: Retorna todas as oportunidades que o candidato se candidatou
  *     security:
@@ -759,7 +736,7 @@
  * @swagger
  * /opportunities/search:
  *   post:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Buscar oportunidades
  *     description: Busca oportunidades por critérios específicos
  *     security:
@@ -801,7 +778,7 @@
  * @swagger
  * /opportunities:
  *   post:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Criar nova oportunidade
  *     description: Cria uma nova oportunidade de trabalho. Disponível apenas para RH.
  *     security:
@@ -869,7 +846,7 @@
  * @swagger
  * /opportunities/{id}:
  *   get:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Obter oportunidade por ID
  *     description: Retorna os detalhes de uma oportunidade específica
  *     security:
@@ -907,7 +884,7 @@
  * @swagger
  * /opportunities/{id}/responses:
  *   get:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Listar respostas de uma oportunidade
  *     description: Retorna todas as respostas/candidaturas para uma oportunidade específica. Disponível apenas para RH.
  *     security:
@@ -947,7 +924,7 @@
  * @swagger
  * /opportunities/{responseId}/withdraw:
  *   delete:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Retirar candidatura
  *     description: Remove a candidatura do usuário para uma oportunidade
  *     security:
@@ -989,7 +966,7 @@
  * @swagger
  * /opportunities/{id}:
  *   delete:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Deletar oportunidade
  *     description: Remove uma oportunidade permanentemente. Disponível apenas para RH.
  *     security:
@@ -1037,7 +1014,7 @@
  * @swagger
  * /opportunities/{id}/activate:
  *   patch:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Ativar oportunidade
  *     description: Ativa uma oportunidade desativada. Disponível apenas para RH.
  *     security:
@@ -1081,7 +1058,7 @@
  * @swagger
  * /opportunities/{id}/deactivate:
  *   patch:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Desativar oportunidade
  *     description: Desativa uma oportunidade ativa. Disponível apenas para RH.
  *     security:
@@ -1125,7 +1102,7 @@
  * @swagger
  * /opportunities/rh:
  *   get:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Listar oportunidades do RH
  *     description: Retorna todas as oportunidades criadas pelo RH autenticado
  *     security:
@@ -1157,7 +1134,7 @@
  * @swagger
  * /opportunities/{id}/candidates-count:
  *   get:
- *     tags: [Oportunidades]
+ *     tags: [Opportunities]
  *     summary: Contar candidatos da oportunidade
  *     description: Retorna o número total de candidatos que se candidataram para a oportunidade. Disponível apenas para RH.
  *     security:
@@ -1208,7 +1185,7 @@
  * @swagger
  * /auth/email/register:
  *   post:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Registro com email e senha
  *     description: Registra um novo usuário com email e senha
  *     requestBody:
@@ -1263,7 +1240,7 @@
  * @swagger
  * /auth/email/login:
  *   post:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Login com email e senha
  *     description: Autentica um usuário com email e senha
  *     requestBody:
@@ -1311,7 +1288,7 @@
  * @swagger
  * /auth/email/confirm:
  *   get:
- *     tags: [Autenticação]
+ *     tags: [Authentication]
  *     summary: Confirmar email
  *     description: Confirma o email do usuário através do token enviado por email
  *     parameters:
@@ -1345,7 +1322,7 @@
  * @swagger
  * /forms:
  *   post:
- *     tags: [Formulários]
+ *     tags: [Forms]
  *     summary: Criar novo formulário
  *     description: Cria um novo formulário. Disponível apenas para RH.
  *     security:
@@ -1390,7 +1367,7 @@
  * @swagger
  * /forms:
  *   get:
- *     tags: [Formulários]
+ *     tags: [Forms]
  *     summary: Listar formulários do RH
  *     description: Retorna todos os formulários criados pelo RH autenticado
  *     security:
@@ -1422,7 +1399,7 @@
  * @swagger
  * /forms/{id}:
  *   get:
- *     tags: [Formulários]
+ *     tags: [Forms]
  *     summary: Obter formulário por ID
  *     description: Retorna os detalhes de um formulário específico
  *     security:
@@ -1466,7 +1443,7 @@
  * @swagger
  * /forms/{id}:
  *   put:
- *     tags: [Formulários]
+ *     tags: [Forms]
  *     summary: Atualizar formulário
  *     description: Atualiza um formulário existente. Disponível apenas para RH.
  *     security:
@@ -1523,7 +1500,7 @@
  * @swagger
  * /forms/{id}:
  *   delete:
- *     tags: [Formulários]
+ *     tags: [Forms]
  *     summary: Deletar formulário
  *     description: Remove um formulário permanentemente. Disponível apenas para RH.
  *     security:
@@ -1571,7 +1548,7 @@
  * @swagger
  * /forms/generate-local-question:
  *   post:
- *     tags: [Formulários]
+ *     tags: [Forms]
  *     summary: Gerar pergunta local
  *     description: Gera uma pergunta com base nas perguntas locais (sem salvar no banco). Disponível apenas para RH.
  *     security:
@@ -1615,7 +1592,7 @@
  * @swagger
  * /candidate/responses:
  *   post:
- *     tags: [Respostas]
+ *     tags: [Forms]
  *     summary: Submeter resposta do formulário
  *     description: Permite que um candidato submeta suas respostas para um formulário de uma oportunidade
  *     security:
@@ -1665,7 +1642,7 @@
  * @swagger
  * /candidate/responses/{formId}:
  *   get:
- *     tags: [Respostas]
+ *     tags: [Forms]
  *     summary: Obter respostas do formulário
  *     description: Retorna todas as respostas de um formulário específico. Disponível apenas para RH.
  *     security:
@@ -1705,7 +1682,7 @@
  * @swagger
  * /candidate/{id}/responded:
  *   get:
- *     tags: [Respostas]
+ *     tags: [Forms]
  *     summary: Verificar se candidato respondeu
  *     description: Verifica se o candidato já respondeu ao formulário de uma oportunidade
  *     security:
@@ -1745,7 +1722,7 @@
  * @swagger
  * /notifications/send:
  *   post:
- *     tags: [Notificações]
+ *     tags: [Notifications]
  *     summary: Enviar notificação
  *     description: Envia uma notificação para um usuário específico
  *     security:
@@ -1793,7 +1770,7 @@
  * @swagger
  * /notifications:
  *   get:
- *     tags: [Notificações]
+ *     tags: [Notifications]
  *     summary: Obter notificações do usuário
  *     description: Retorna todas as notificações do usuário autenticado
  *     security:
@@ -1819,7 +1796,7 @@
  * @swagger
  * /notifications/feedbacks/send:
  *   post:
- *     tags: [Notificações]
+ *     tags: [Notifications]
  *     summary: Enviar feedback
  *     description: Envia um feedback para um candidato sobre sua candidatura
  *     security:
@@ -1872,7 +1849,7 @@
  * @swagger
  * /notifications/feedbacks:
  *   get:
- *     tags: [Notificações]
+ *     tags: [Notifications]
  *     summary: Obter feedbacks do usuário
  *     description: Retorna todos os feedbacks recebidos pelo usuário autenticado
  *     security:
@@ -1898,7 +1875,7 @@
  * @swagger
  * /talents/candidates:
  *   get:
- *     tags: [Talentos]
+ *     tags: [Talents]
  *     summary: Listar todos os candidatos
  *     description: Retorna uma lista de todos os candidatos cadastrados
  *     responses:
@@ -1916,7 +1893,7 @@
  * @swagger
  * /talents/candidates/{id}:
  *   get:
- *     tags: [Talentos]
+ *     tags: [Talents]
  *     summary: Obter candidato por ID
  *     description: Retorna os detalhes de um candidato específico
  *     parameters:
@@ -1946,7 +1923,7 @@
  * @swagger
  * /bank-talents:
  *   get:
- *     tags: [Talentos]
+ *     tags: [Talents]
  *     summary: Obter banco de talentos
  *     description: Retorna o banco de talentos com candidatos e seus favoritos. Disponível apenas para RH.
  *     security:
@@ -1986,7 +1963,7 @@
  * @swagger
  * /bank-talents/favorite/{candidateId}:
  *   post:
- *     tags: [Talentos]
+ *     tags: [Talents]
  *     summary: Favoritar candidato
  *     description: Adiciona um candidato aos favoritos do RH
  *     security:
@@ -2034,7 +2011,7 @@
  * @swagger
  * /bank-talents/unfavorite/{candidateId}:
  *   delete:
- *     tags: [Talentos]
+ *     tags: [Talents]
  *     summary: Desfavoritar candidato
  *     description: Remove um candidato dos favoritos do RH
  *     security:
@@ -2082,7 +2059,7 @@
  * @swagger
  * /reports/{candidateId}/{opportunityId}:
  *   get:
- *     tags: [Relatórios]
+ *     tags: [Reports]
  *     summary: Gerar relatório do candidato
  *     description: Gera um relatório detalhado sobre o desempenho de um candidato em uma oportunidade específica. Disponível apenas para RH.
  *     security:
@@ -2432,6 +2409,192 @@
  *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Vaga não encontrada ou não pertence ao usuário RH
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /candidates/profile:
+ *   get:
+ *     tags: [Users]
+ *     summary: Obter perfil completo do candidato
+ *     description: Retorna o perfil completo do candidato autenticado, incluindo habilidades, experiências e educação
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil do candidato retornado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CandidateProfile'
+ *       404:
+ *         description: Perfil não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /candidates/profile:
+ *   put:
+ *     tags: [Users]
+ *     summary: Criar ou atualizar perfil do candidato
+ *     description: Cria ou atualiza o perfil completo do candidato, incluindo telefone, habilidades, experiências e educação
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               phoneNumber:
+ *                 type: string
+ *                 nullable: true
+ *                 example: "+55 (11) 99999-9999"
+ *               skills:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["React", "TypeScript", "Node.js", "PostgreSQL"]
+ *               resumeUrl:
+ *                 type: string
+ *                 nullable: true
+ *                 example: "https://example.com/resume.pdf"
+ *               experiences:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/ProfessionalExperienceInput'
+ *               educations:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/EducationInput'
+ *     responses:
+ *       200:
+ *         description: Perfil criado ou atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CandidateProfile'
+ *       403:
+ *         description: Apenas candidatos podem criar perfis
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /candidates/profile/resume:
+ *   post:
+ *     tags: [Users]
+ *     summary: Upload de currículo PDF
+ *     description: Faz upload do currículo em PDF do candidato
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - resumeUrl
+ *             properties:
+ *               resumeUrl:
+ *                 type: string
+ *                 example: "https://example.com/resume.pdf"
+ *     responses:
+ *       200:
+ *         description: Currículo enviado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Currículo enviado com sucesso"
+ *                 resumeUrl:
+ *                   type: string
+ *                   example: "https://example.com/resume.pdf"
+ *       400:
+ *         description: URL do currículo é obrigatória
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /candidates/profile/{candidateId}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Obter perfil de candidato por ID (RH)
+ *     description: Retorna o perfil completo de um candidato específico. Disponível apenas para usuários RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: candidateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do candidato
+ *         example: "clxyz123456789"
+ *     responses:
+ *       200:
+ *         description: Perfil do candidato retornado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/CandidateProfile'
+ *                 - type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Perfil de candidato não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas usuários RH podem acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido ou não fornecido
  *         content:
  *           application/json:
  *             schema:
