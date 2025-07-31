@@ -170,12 +170,16 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // Buscar ou criar perfil
+    // Buscar perfil existente
     let profile = await prisma.candidateProfile.findUnique({
       where: { userId }
     });
 
+    let message = 'Currículo enviado com sucesso';
+    let previousResumeUrl = null;
+
     if (!profile) {
+      // Criar novo perfil com currículo
       profile = await prisma.candidateProfile.create({
         data: {
           userId,
@@ -184,15 +188,68 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         }
       });
     } else {
+      // Verificar se já existe um currículo
+      if (profile.resumeUrl) {
+        previousResumeUrl = profile.resumeUrl;
+        message = 'Currículo substituído com sucesso';
+      }
+
+      // Atualizar com novo currículo (substitui automaticamente)
       profile = await prisma.candidateProfile.update({
         where: { userId },
         data: { resumeUrl }
       });
     }
 
-    res.json({ message: 'Currículo enviado com sucesso', resumeUrl: profile.resumeUrl });
+    res.json({ 
+      message, 
+      resumeUrl: profile.resumeUrl,
+      previousResumeUrl: previousResumeUrl 
+    });
   } catch (error) {
     console.error('Erro ao fazer upload do currículo:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+};
+
+export const deleteResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: 'Usuário não autenticado' });
+      return;
+    }
+
+    // Buscar perfil existente
+    const profile = await prisma.candidateProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!profile) {
+      res.status(404).json({ message: 'Perfil não encontrado' });
+      return;
+    }
+
+    if (!profile.resumeUrl) {
+      res.status(400).json({ message: 'Nenhum currículo encontrado para excluir' });
+      return;
+    }
+
+    const deletedResumeUrl = profile.resumeUrl;
+
+    // Remover URL do currículo
+    await prisma.candidateProfile.update({
+      where: { userId },
+      data: { resumeUrl: null }
+    });
+
+    res.json({ 
+      message: 'Currículo excluído com sucesso',
+      deletedResumeUrl 
+    });
+  } catch (error) {
+    console.error('Erro ao excluir currículo:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };

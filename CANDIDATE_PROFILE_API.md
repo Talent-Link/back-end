@@ -83,9 +83,37 @@ Content-Type: application/json
 }
 ```
 
+**Comportamento:**
+- ✅ Se não existir currículo: cria novo
+- 🔄 Se já existir currículo: **substitui automaticamente**
+- 📝 Retorna informação sobre currículo anterior (se existia)
+
+**Resposta de Sucesso:**
+```json
+{
+  "message": "Currículo substituído com sucesso",
+  "resumeUrl": "https://example.com/new-resume.pdf",
+  "previousResumeUrl": "https://example.com/old-resume.pdf"
+}
+```
+
+#### 4. Excluir Currículo
+```http
+DELETE /candidates/profile/resume
+Authorization: Bearer <token_jwt>
+```
+
+**Resposta de Sucesso:**
+```json
+{
+  "message": "Currículo excluído com sucesso",
+  "deletedResumeUrl": "https://example.com/deleted-resume.pdf"
+}
+```
+
 ### 👔 Para RH
 
-#### 4. Visualizar Perfil de Candidato
+#### 5. Visualizar Perfil de Candidato
 ```http
 GET /candidates/profile/{candidateId}
 Authorization: Bearer <token_jwt_rh>
@@ -171,7 +199,22 @@ POST /candidates/profile/resume
 }
 ```
 
-### 5. **RH visualiza perfil do candidato**
+### 5. **Candidato substitui currículo existente**
+```http
+POST /candidates/profile/resume
+{
+  "resumeUrl": "https://storage.com/novo-curriculo.pdf"
+}
+```
+*Resposta: "Currículo substituído com sucesso" + URL do currículo anterior*
+
+### 6. **Candidato exclui currículo**
+```http
+DELETE /candidates/profile/resume
+```
+*Resposta: "Currículo excluído com sucesso" + URL do currículo excluído*
+
+### 7. **RH visualiza perfil do candidato**
 ```http
 GET /candidates/profile/clxyz987654321
 ```
@@ -236,7 +279,14 @@ GET /candidates/profile/clxyz987654321
 2. Nova experiência profissional
 3. Novas habilidades adquiridas  
 4. Curso/certificação finalizada
-5. Atualização do currículo
+5. Atualização do currículo (substitui automaticamente)
+6. Exclusão do currículo quando necessário
+
+### ✅ Gerenciamento de Currículo
+1. **Upload inicial**: POST /candidates/profile/resume
+2. **Substituição**: POST /candidates/profile/resume (mesmo endpoint)
+3. **Exclusão**: DELETE /candidates/profile/resume
+4. **Download pelo RH**: Através da visualização do perfil
 
 ## Integração Frontend
 
@@ -261,6 +311,50 @@ const updateCandidateProfile = async (profileData) => {
     console.error('Erro ao atualizar perfil:', error);
   }
 };
+
+// Upload/Substituição de Currículo
+const uploadResume = async (resumeUrl) => {
+  try {
+    const response = await fetch('/candidates/profile/resume', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ resumeUrl })
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log(result.message); // "Currículo enviado" ou "Currículo substituído"
+      if (result.previousResumeUrl) {
+        console.log('Currículo anterior:', result.previousResumeUrl);
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao fazer upload:', error);
+  }
+};
+
+// Excluir Currículo
+const deleteResume = async () => {
+  try {
+    const response = await fetch('/candidates/profile/resume', {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      console.log(result.message); // "Currículo excluído com sucesso"
+      console.log('Currículo excluído:', result.deletedResumeUrl);
+    }
+  } catch (error) {
+    console.error('Erro ao excluir currículo:', error);
+  }
+};
 ```
 
 ## Segurança
@@ -269,3 +363,30 @@ const updateCandidateProfile = async (profileData) => {
 - 🎯 **Role-based access**: Candidatos só acessam próprio perfil, RH acessa qualquer perfil
 - 🛡️ **Validação de dados** em todos os inputs
 - 🔍 **Logs de auditoria** para mudanças de perfil
+
+## Novidades Implementadas
+
+### 🔄 Substituição Automática de Currículo
+- Quando um candidato faz upload de um novo currículo, o anterior é **automaticamente substituído**
+- A API retorna informações sobre o currículo anterior para auditoria
+- Não é necessário excluir manualmente antes de fazer upload
+
+### 🗑️ Exclusão de Currículo
+- Nova rota `DELETE /candidates/profile/resume`
+- Remove completamente o currículo do perfil
+- Retorna informações do currículo excluído para auditoria
+
+### 📊 Respostas Melhoradas
+- Upload inicial: `"Currículo enviado com sucesso"`
+- Substituição: `"Currículo substituído com sucesso"` + URL anterior
+- Exclusão: `"Currículo excluído com sucesso"` + URL excluído
+
+## Endpoints Disponíveis - Resumo
+
+| Método | Endpoint | Descrição | Acesso |
+|--------|----------|-----------|---------|
+| GET | `/candidates/profile` | Buscar próprio perfil | 👤 Candidato |
+| PUT | `/candidates/profile` | Criar/atualizar perfil | 👤 Candidato |
+| POST | `/candidates/profile/resume` | Upload/substituir currículo | 👤 Candidato |
+| DELETE | `/candidates/profile/resume` | Excluir currículo | 👤 Candidato |
+| GET | `/candidates/profile/:id` | Visualizar candidato | 👔 RH |
