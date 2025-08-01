@@ -95,6 +95,101 @@ Authorization: Bearer <token_jwt_rh>
 "Sem permissão para desativar esta oportunidade."
 ```
 
+## ⚠️ Soluções de Problemas Comuns
+
+### 🚫 **Erro de CORS com Método PATCH**
+
+**Problema:**
+```
+Requisição cross-origin bloqueada: A diretiva Same Origin (mesma origem) não permite a leitura do recurso remoto... (motivo: método não encontrado no cabeçalho 'Access-Control-Allow-Methods' do CORS)
+```
+
+**Solução:**
+O método `PATCH` precisa estar configurado no CORS do servidor. Verifique se o backend inclui:
+
+```typescript
+// No app.ts do backend
+const corsOptions = {
+  origin: [...],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // ✅ PATCH incluído
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+};
+```
+
+### 🔒 **Erro 401 - Token Inválido**
+
+**Problema:**
+```
+Token de autenticação inválido
+```
+
+**Soluções:**
+1. Verificar se o token existe no localStorage
+2. Verificar se o token não expirou
+3. Fazer novo login se necessário
+
+```typescript
+// Verificação de token
+const token = localStorage.getItem('authToken');
+if (!token) {
+  // Redirecionar para login
+  window.location.href = '/login';
+  return;
+}
+```
+
+### 🚫 **Erro 403 - Sem Permissão**
+
+**Problema:**
+```
+Sem permissão para ativar/desativar esta oportunidade
+```
+
+**Causa:** Apenas o RH que criou a oportunidade pode alterar seu status.
+
+**Solução:** Verificar se o usuário logado é o criador da oportunidade antes de mostrar os controles.
+
+### 🔍 **Erro 404 - Oportunidade Não Encontrada**
+
+**Problema:**
+```
+Oportunidade não encontrada
+```
+
+**Soluções:**
+1. Verificar se o ID da oportunidade está correto
+2. Verificar se a oportunidade não foi deletada
+3. Atualizar a lista de oportunidades
+
+### 📡 **Erro de Rede**
+
+**Problema:**
+```
+Network Error
+```
+
+**Soluções:**
+1. Verificar conexão com internet
+2. Verificar se o servidor está online
+3. Verificar URL da API
+4. Implementar retry automático
+
+```typescript
+// Exemplo de retry
+const retryRequest = async (fn: () => Promise<any>, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
+};
+```
+
 ## Códigos de Status
 
 - ✅ **200** - Operação realizada com sucesso
