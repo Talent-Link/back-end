@@ -95,6 +95,68 @@ Authorization: Bearer <token_jwt_rh>
 "Sem permissão para desativar esta oportunidade."
 ```
 
+### ✏️ **Editar Oportunidade**
+
+#### 3. Editar Vaga
+```http
+PUT /opportunities/{opportunityId}
+Authorization: Bearer <token_jwt_rh>
+Content-Type: application/json
+```
+
+**Descrição:** Atualiza uma oportunidade específica. Apenas o RH criador pode editar.
+
+**Parâmetros:**
+- `opportunityId` (string): ID da oportunidade a ser editada
+
+**Body (todos os campos são opcionais):**
+```json
+{
+  "title": "Novo título da vaga",
+  "description": "Nova descrição da vaga",
+  "location": "Nova localização",
+  "companyId": "nova_empresa_id",
+  "formId": "novo_form_id", // ou null para remover
+  "requirements": "Novos requisitos linha 1\nRequisito linha 2",
+  "benefits": "Novo benefício 1\nBenefício 2"
+}
+```
+
+**Resposta de Sucesso (200):**
+```json
+{
+  "id": "clxyz123456789",
+  "title": "Desenvolvedor Frontend Senior",
+  "description": "Vaga para desenvolvedor React com experiência",
+  "location": "São Paulo, SP",
+  "companyId": "comp_123",
+  "formId": "form_456",
+  "requirements": ["5+ anos React", "TypeScript obrigatório"],
+  "benefits": ["Plano de saúde", "Vale refeição"],
+  "isActive": true,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "company": {
+    "name": "Tech Company",
+    "address": "Rua da Tecnologia, 123"
+  },
+  "form": {
+    "id": "form_456",
+    "title": "Formulário Desenvolvedor",
+    "questions": {...}
+  }
+}
+```
+
+**Resposta se não encontrada (404):**
+```json
+"Oportunidade não encontrada."
+```
+
+**Resposta se sem permissão (403):**
+```json
+"Sem permissão para editar esta oportunidade."
+```
+
 ## ⚠️ Soluções de Problemas Comuns
 
 ### 🚫 **Erro de CORS com Método PATCH**
@@ -221,8 +283,11 @@ O sistema aplica filtros automáticos baseados no tipo de usuário:
 - ℹ️ **Minhas candidaturas** (`GET /opportunities/my-applications`): Todas (ativas e inativas)
 
 #### Para RH (userType: "RH"):
-- 👔 **Todas as funções**: Veem oportunidades independente do status
-- 🔧 **Gerenciamento**: Podem ativar/desativar suas próprias oportunidades
+- 👔 **Lista geral** (`GET /opportunities`): Veem todas as oportunidades (ativas e inativas)
+- 👔 **Busca** (`POST /opportunities/search`): Encontram todas as oportunidades
+- 👔 **Visualização individual** (`GET /opportunities/:id`): Acessam qualquer oportunidade
+- 🎯 **Gerenciamento próprio** (`GET /opportunities/rh`): Suas oportunidades com contadores
+- 🔧 **Ativação/Desativação**: Podem ativar/desativar suas próprias oportunidades
 - 📊 **Relatórios**: Acesso completo a todas as oportunidades
 
 ### Impactos da Desativação
@@ -308,6 +373,47 @@ export const opportunityActivationService = {
       return result;
     } catch (error) {
       console.error('Erro ao desativar oportunidade:', error);
+      throw error;
+    }
+  },
+
+  // Editar oportunidade
+  async updateOpportunity(opportunityId: string, updateData: {
+    title?: string;
+    description?: string;
+    location?: string;
+    companyId?: string;
+    formId?: string | null;
+    requirements?: string;
+    benefits?: string;
+  }): Promise<any> {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+
+      console.log('Editando oportunidade:', opportunityId, updateData);
+
+      const response = await fetch(`${API_BASE_URL}/opportunities/${opportunityId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Erro ao editar oportunidade');
+      }
+
+      const result = await response.json();
+      console.log('Oportunidade editada:', result);
+      return result;
+    } catch (error) {
+      console.error('Erro ao editar oportunidade:', error);
       throw error;
     }
   },
@@ -639,7 +745,544 @@ const OpportunityActivationButtons: React.FC<OpportunityActivationButtonsProps> 
 export default OpportunityActivationButtons;
 ```
 
-### Componente React - Lista de Oportunidades com Controle
+### Componente React - Formulário de Edição
+
+```tsx
+// OpportunityEditForm.tsx
+import React, { useState, useEffect } from 'react';
+import { opportunityActivationService } from '../services/opportunityActivationService';
+
+interface Company {
+  id: string;
+  name: string;
+}
+
+interface Form {
+  id: string;
+  title: string;
+}
+
+interface OpportunityEditFormProps {
+  opportunityId: string;
+  initialData?: {
+    title: string;
+    description: string;
+    location: string;
+    companyId: string;
+    formId?: string;
+    requirements: string[];
+    benefits: string[];
+  };
+  companies: Company[];
+  forms: Form[];
+  onSave?: (updatedOpportunity: any) => void;
+  onCancel?: () => void;
+}
+
+const OpportunityEditForm: React.FC<OpportunityEditFormProps> = ({
+  opportunityId,
+  initialData,
+  companies,
+  forms,
+  onSave,
+  onCancel
+}) => {
+  const [formData, setFormData] = useState({
+    title: initialData?.title || '',
+    description: initialData?.description || '',
+    location: initialData?.location || '',
+    companyId: initialData?.companyId || '',
+    formId: initialData?.formId || '',
+    requirements: initialData?.requirements?.join('\n') || '',
+    benefits: initialData?.benefits?.join('\n') || ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      setError('');
+
+      // Preparar dados para envio
+      const updateData = {
+        ...formData,
+        formId: formData.formId || null // Converter string vazia para null
+      };
+
+      const updatedOpportunity = await opportunityActivationService.updateOpportunity(
+        opportunityId,
+        updateData
+      );
+
+      if (onSave) {
+        onSave(updatedOpportunity);
+      }
+
+    } catch (err) {
+      setError(err.message || 'Erro ao salvar oportunidade');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6">Editar Oportunidade</h2>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Título */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Título da Vaga *
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => handleChange('title', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        {/* Descrição */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Descrição *
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        {/* Localização */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Localização *
+          </label>
+          <input
+            type="text"
+            value={formData.location}
+            onChange={(e) => handleChange('location', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        {/* Empresa */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Empresa *
+          </label>
+          <select
+            value={formData.companyId}
+            onChange={(e) => handleChange('companyId', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Selecione uma empresa</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Formulário */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Formulário (Opcional)
+          </label>
+          <select
+            value={formData.formId}
+            onChange={(e) => handleChange('formId', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Nenhum formulário</option>
+            {forms.map((form) => (
+              <option key={form.id} value={form.id}>
+                {form.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Requisitos */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Requisitos
+          </label>
+          <textarea
+            value={formData.requirements}
+            onChange={(e) => handleChange('requirements', e.target.value)}
+            rows={3}
+            placeholder="Digite cada requisito em uma linha"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Benefícios */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Benefícios
+          </label>
+          <textarea
+            value={formData.benefits}
+            onChange={(e) => handleChange('benefits', e.target.value)}
+            rows={3}
+            placeholder="Digite cada benefício em uma linha"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Botões */}
+        <div className="flex space-x-4 pt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`
+              flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-medium transition-colors
+              ${loading ? 'opacity-75 cursor-wait' : ''}
+            `}
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                Salvando...
+              </>
+            ) : (
+              'Salvar Alterações'
+            )}
+          </button>
+          
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md font-medium transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default OpportunityEditForm;
+```
+
+### Componente React - Lista de Oportunidades com Edição e Controle
+
+```tsx
+// OpportunityManagementList.tsx
+import React, { useState, useEffect } from 'react';
+import { opportunityActivationService } from '../services/opportunityActivationService';
+import OpportunityEditForm from './OpportunityEditForm';
+
+interface Opportunity {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  company: {
+    id: string;
+    name: string;
+  };
+  form?: {
+    id: string;
+    title: string;
+  };
+  requirements: string[];
+  benefits: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
+const OpportunityManagementList: React.FC = () => {
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [processingId, setProcessingId] = useState<string>('');
+  const [editingOpportunity, setEditingOpportunity] = useState<Opportunity | null>(null);
+  const [companies, setCompanies] = useState([]);
+  const [forms, setForms] = useState([]);
+
+  useEffect(() => {
+    loadOpportunities();
+    loadCompanies();
+    loadForms();
+  }, []);
+
+  const loadOpportunities = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await opportunityActivationService.getAllOpportunities();
+      setOpportunities(data);
+    } catch (err) {
+      setError('Erro ao carregar oportunidades');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCompanies = async () => {
+    try {
+      // Aqui você carregaria as empresas da sua API
+      // const companiesData = await api.get('/companies');
+      // setCompanies(companiesData);
+    } catch (err) {
+      console.error('Erro ao carregar empresas:', err);
+    }
+  };
+
+  const loadForms = async () => {
+    try {
+      // Aqui você carregaria os formulários da sua API
+      // const formsData = await api.get('/forms');
+      // setForms(formsData);
+    } catch (err) {
+      console.error('Erro ao carregar formulários:', err);
+    }
+  };
+
+  const handleActivation = async (opportunityId: string, activate: boolean) => {
+    try {
+      setProcessingId(opportunityId);
+      
+      const updatedOpportunity = await opportunityActivationService.toggleActivation(
+        opportunityId,
+        activate
+      );
+
+      // Atualizar lista local
+      setOpportunities(prev => 
+        prev.map(op => 
+          op.id === opportunityId 
+            ? { ...op, isActive: updatedOpportunity.isActive }
+            : op
+        )
+      );
+
+    } catch (err) {
+      setError(`Erro ao ${activate ? 'ativar' : 'desativar'} oportunidade`);
+      console.error(err);
+    } finally {
+      setProcessingId('');
+    }
+  };
+
+  const handleEdit = (opportunity: Opportunity) => {
+    setEditingOpportunity(opportunity);
+  };
+
+  const handleSaveEdit = (updatedOpportunity: Opportunity) => {
+    // Atualizar lista local
+    setOpportunities(prev => 
+      prev.map(op => 
+        op.id === updatedOpportunity.id 
+          ? updatedOpportunity
+          : op
+      )
+    );
+    
+    setEditingOpportunity(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingOpportunity(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-2">Carregando oportunidades...</span>
+      </div>
+    );
+  }
+
+  if (editingOpportunity) {
+    return (
+      <OpportunityEditForm
+        opportunityId={editingOpportunity.id}
+        initialData={{
+          title: editingOpportunity.title,
+          description: editingOpportunity.description,
+          location: editingOpportunity.location,
+          companyId: editingOpportunity.company.id,
+          formId: editingOpportunity.form?.id,
+          requirements: editingOpportunity.requirements,
+          benefits: editingOpportunity.benefits
+        }}
+        companies={companies}
+        forms={forms}
+        onSave={handleSaveEdit}
+        onCancel={handleCancelEdit}
+      />
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Gerenciar Oportunidades</h1>
+        <button
+          onClick={loadOpportunities}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
+        >
+          Atualizar Lista
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <div className="grid gap-6">
+        {opportunities.map((opportunity) => (
+          <div
+            key={opportunity.id}
+            className={`
+              bg-white p-6 rounded-lg shadow-md border-l-4 transition-colors
+              ${opportunity.isActive ? 'border-green-500' : 'border-gray-400'}
+            `}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {opportunity.title}
+                </h3>
+                <p className="text-gray-600 mb-2">{opportunity.description}</p>
+                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <span>📍 {opportunity.location}</span>
+                  <span>🏢 {opportunity.company.name}</span>
+                  {opportunity.form && (
+                    <span>📝 {opportunity.form.title}</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2 ml-4">
+                <span
+                  className={`
+                    px-2 py-1 rounded-full text-xs font-medium
+                    ${opportunity.isActive 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                    }
+                  `}
+                >
+                  {opportunity.isActive ? 'Ativa' : 'Inativa'}
+                </span>
+              </div>
+            </div>
+
+            {/* Requisitos e Benefícios */}
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
+              {opportunity.requirements.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Requisitos:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {opportunity.requirements.map((req, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-blue-500 mr-2">•</span>
+                        {req}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {opportunity.benefits.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Benefícios:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {opportunity.benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-green-500 mr-2">•</span>
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="flex space-x-3 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => handleEdit(opportunity)}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                ✏️ Editar
+              </button>
+
+              <button
+                onClick={() => handleActivation(opportunity.id, !opportunity.isActive)}
+                disabled={processingId === opportunity.id}
+                className={`
+                  px-4 py-2 rounded-md text-sm font-medium transition-colors
+                  ${opportunity.isActive
+                    ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                    : 'bg-green-500 hover:bg-green-600 text-white'
+                  }
+                  ${processingId === opportunity.id ? 'opacity-75 cursor-wait' : ''}
+                `}
+              >
+                {processingId === opportunity.id ? (
+                  <>
+                    <div className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    {opportunity.isActive ? '⏸️ Desativar' : '▶️ Ativar'}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {opportunities.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              Nenhuma oportunidade encontrada
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default OpportunityManagementList;
+```
 
 ```tsx
 // OpportunityListWithActivation.tsx
@@ -1028,10 +1671,34 @@ await toggleOpportunityStatus(opportunityId, currentStatus);
 
 ## Endpoints Resumo
 
-| Método | Endpoint | Descrição | Acesso |
-|--------|----------|-----------|---------|
-| PATCH | `/opportunities/:id/activate` | Ativar oportunidade | 👔 RH (criador) |
-| PATCH | `/opportunities/:id/deactivate` | Desativar oportunidade | 👔 RH (criador) |
+| Método | Endpoint | Descrição | Candidatos | RH |
+|--------|----------|-----------|------------|-----|
+| GET | `/opportunities` | Listar oportunidades | Apenas ativas | Todas |
+| GET | `/opportunities/rh` | Oportunidades do RH | ❌ | Suas oportunidades |
+| GET | `/opportunities/:id` | Detalhes de oportunidade | Apenas ativas | Todas |
+| POST | `/opportunities/search` | Buscar oportunidades | Apenas ativas | Todas |
+| POST | `/opportunities` | Criar oportunidade | ❌ | ✅ |
+| PUT | `/opportunities/:id` | Editar oportunidade | ❌ | Apenas suas |
+| PATCH | `/opportunities/:id/activate` | Ativar oportunidade | ❌ | Apenas suas |
+| PATCH | `/opportunities/:id/deactivate` | Desativar oportunidade | ❌ | Apenas suas |
+| DELETE | `/opportunities/:id` | Deletar oportunidade | ❌ | Apenas suas |
+
+### � **Recomendações para Frontend:**
+
+#### Para Tela de Candidatos:
+```typescript
+// Use a rota geral - só retorna oportunidades ativas
+const opportunities = await fetch('/opportunities');
+```
+
+#### Para Dashboard do RH:
+```typescript
+// Use a rota específica do RH - retorna todas as suas oportunidades
+const myOpportunities = await fetch('/opportunities/rh');
+
+// Ou para ver todas as oportunidades do sistema
+const allOpportunities = await fetch('/opportunities');
+```
 
 ---
 

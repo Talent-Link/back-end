@@ -5,6 +5,7 @@ import {
   getOpportunityById,
   getResponsesByOpportunity,
   createOpportunity,
+  updateOpportunity,
   searchOpportunities,
   withdrawApplication,
   getUserOpportunities,
@@ -29,6 +30,9 @@ router.post("/search", ensureToken, searchOpportunities);
 
 // POST  /opportunities               → só RH pode criar oportunidade
 router.post("/", ensureToken, onlyRH, createOpportunity);
+
+// PUT   /opportunities/:id          → só RH pode editar oportunidade
+router.put("/:id", ensureToken, onlyRH, updateOpportunity);
 
 // GET   /opportunities/:id          → qualquer usuário autenticado
 router.get("/:id", ensureToken, getOpportunityById);

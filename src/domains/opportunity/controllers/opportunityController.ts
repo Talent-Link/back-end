@@ -141,6 +141,111 @@ export async function createOpportunity(
   }
 }
 
+// Função para editar oportunidade
+export async function updateOpportunity(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const user = req.user as any;
+    const { id } = req.params;
+    const {
+      title,
+      description,
+      location,
+      companyId,
+      formId,
+      requirements,
+      benefits,
+    } = req.body;
+
+    // Validação de permissão
+    if (!user || user.userType !== "RH") {
+      res.status(403).send("Apenas RH pode editar oportunidades.");
+      return;
+    }
+
+    // Busca a oportunidade existente
+    const existingOpportunity = await prisma.opportunity.findUnique({
+      where: { id },
+      include: { company: true },
+    });
+
+    if (!existingOpportunity) {
+      res.status(404).send("Oportunidade não encontrada.");
+      return;
+    }
+
+    // Verifica se o RH é o dono da oportunidade
+    if (existingOpportunity.company.recruiterId !== user.id) {
+      res.status(403).send("Sem permissão para editar esta oportunidade.");
+      return;
+    }
+
+    // Se companyId for enviado, valida se pertence ao RH
+    if (companyId && companyId !== existingOpportunity.companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+      });
+
+      if (!company || company.recruiterId !== user.id) {
+        res.status(403).send("Empresa não encontrada ou sem permissão.");
+        return;
+      }
+    }
+
+    // Se formulário for enviado, valida a propriedade
+    if (formId) {
+      const form = await prisma.form.findUnique({ where: { id: formId } });
+      if (!form || form.recruiterId !== user.id) {
+        res.status(403).send("Formulário não encontrado ou sem permissão.");
+        return;
+      }
+    }
+
+    // Prepara os dados para atualização (apenas campos fornecidos)
+    const updateData: any = {};
+    
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (location !== undefined) updateData.location = location;
+    if (companyId !== undefined) updateData.companyId = companyId;
+    if (requirements !== undefined) updateData.requirements = requirements || "";
+    if (benefits !== undefined) updateData.benefits = benefits || "";
+    
+    // FormId pode ser null para remover o formulário
+    if (formId !== undefined) {
+      updateData.formId = formId || null;
+    }
+
+    // Atualiza a oportunidade
+    const updatedOpportunity = await prisma.opportunity.update({
+      where: { id },
+      data: updateData,
+      include: {
+        company: {
+          select: { name: true, address: true },
+        },
+        form: true,
+      },
+    });
+
+    // Retorna com requirements e benefits formatados
+    res.status(200).json({
+      ...updatedOpportunity,
+      requirements: (updatedOpportunity.requirements ?? "")
+        .split("\n")
+        .filter(Boolean),
+      benefits: (updatedOpportunity.benefits ?? "")
+        .split("\n")
+        .filter(Boolean),
+    });
+  } catch (error) {
+    console.error("Erro ao editar oportunidade:", error);
+    res.status(500).send("Erro interno ao editar oportunidade.");
+  }
+}
+
 export async function getResponsesByOpportunity(
   req: Request,
   res: Response
