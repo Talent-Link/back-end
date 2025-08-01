@@ -7,10 +7,15 @@ export async function getAllOpportunities(
   res: Response
 ): Promise<void> {
   try {
+    const user = req.user as any;
+    
+    // Candidatos só veem oportunidades ativas, RH vê todas
+    const whereCondition = user?.userType === "CANDIDATO" 
+      ? { isActive: true }
+      : {};
+
     const opportunities = await prisma.opportunity.findMany({
-      where: {
-        isActive: true, // Apenas oportunidades ativas são visíveis para candidatos
-      },
+      where: whereCondition,
       include: {
         company: {
           select: { name: true, address: true },
@@ -208,11 +213,17 @@ export async function searchOpportunities(
 ): Promise<void> {
   try {
     const { title, location, companyName } = req.query;
+    const user = req.user as any;
+
+    // Candidatos só veem oportunidades ativas, RH vê todas
+    const baseConditions = user?.userType === "CANDIDATO" 
+      ? [{ isActive: true }] 
+      : [];
 
     const opportunities = await prisma.opportunity.findMany({
       where: {
         AND: [
-          { isActive: true }, // Apenas oportunidades ativas são visíveis na busca
+          ...baseConditions,
           title
             ? { title: { contains: String(title), mode: "insensitive" } }
             : {},
