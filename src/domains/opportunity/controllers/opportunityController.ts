@@ -312,6 +312,107 @@ export async function getResponsesByOpportunity(
   }
 }
 
+// Função para o RH visualizar todos os candidatos de uma oportunidade específica
+export async function getCandidatesByOpportunity(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const { id: opportunityId } = req.params;
+    const user = req.user as any;
+
+    // Validação de autenticação e permissão
+    if (!user) {
+      res.status(401).send("Usuário não autenticado.");
+      return;
+    }
+    
+    if (user.userType !== "RH") {
+      res.status(403).send("Acesso restrito a RH.");
+      return;
+    }
+
+    // Busca a oportunidade e verifica se pertence ao RH
+    const opportunity = await prisma.opportunity.findUnique({
+      where: { id: opportunityId },
+      include: {
+        company: true,
+      },
+    });
+
+    if (!opportunity) {
+      res.status(404).send("Oportunidade não encontrada.");
+      return;
+    }
+
+    if (opportunity.company.recruiterId !== user.id) {
+      res.status(403).send("Sem permissão para ver os candidatos desta oportunidade.");
+      return;
+    }
+
+    // Busca todas as candidaturas com dados básicos dos candidatos
+    const responses = await prisma.response.findMany({
+      where: { opportunityId },
+      include: {
+        candidate: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            photoUrl: true,
+            createdAt: true,
+            candidateProfile: {
+              select: {
+                phoneNumber: true,
+                resumeUrl: true,
+                skills: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Formata os dados de resposta
+    const candidates = responses.map(response => ({
+      candidatureId: response.id,
+      candidatureDate: response.createdAt,
+      answers: response.answers,
+      candidate: {
+        id: response.candidate.id,
+        name: response.candidate.name,
+        email: response.candidate.email,
+        photoUrl: response.candidate.photoUrl,
+        memberSince: response.candidate.createdAt,
+        profile: response.candidate.candidateProfile ? {
+          phoneNumber: response.candidate.candidateProfile.phoneNumber,
+          hasResume: !!response.candidate.candidateProfile.resumeUrl,
+          skills: response.candidate.candidateProfile.skills,
+        } : null
+      }
+    }));
+
+    res.status(200).json({
+      opportunity: {
+        id: opportunity.id,
+        title: opportunity.title,
+        description: opportunity.description,
+        location: opportunity.location,
+        company: {
+          name: opportunity.company.name,
+          address: opportunity.company.address,
+        }
+      },
+      totalCandidates: candidates.length,
+      candidates
+    });
+  } catch (error) {
+    console.error("Erro ao buscar candidatos por oportunidade:", error);
+    res.status(500).send("Erro interno ao buscar candidatos por oportunidade.");
+  }
+}
+
 export async function searchOpportunities(
   req: Request,
   res: Response

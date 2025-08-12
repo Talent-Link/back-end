@@ -290,3 +290,67 @@ export const getCandidateProfileById = async (req: Request, res: Response): Prom
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
+
+// Função para o RH acessar o currículo PDF de um candidato
+export const getCandidateResume = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { candidateId } = req.params;
+    const user = req.user as any;
+
+    // Validação de autenticação e permissão
+    if (!user) {
+      res.status(401).json({ message: 'Usuário não autenticado' });
+      return;
+    }
+
+    if (user.userType !== 'RH') {
+      res.status(403).json({ message: 'Acesso restrito a RH' });
+      return;
+    }
+
+    // Busca o perfil do candidato
+    const profile = await prisma.candidateProfile.findUnique({
+      where: { userId: candidateId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!profile) {
+      res.status(404).json({ message: 'Perfil de candidato não encontrado' });
+      return;
+    }
+
+    if (!profile.resumeUrl) {
+      res.status(404).json({ 
+        message: 'Currículo não encontrado para este candidato',
+        candidate: {
+          name: profile.user.name,
+          email: profile.user.email
+        }
+      });
+      return;
+    }
+
+    // Retorna os dados do currículo
+    res.json({
+      candidate: {
+        id: profile.user.id,
+        name: profile.user.name,
+        email: profile.user.email
+      },
+      resumeUrl: profile.resumeUrl,
+      message: 'Currículo encontrado com sucesso'
+    });
+
+  } catch (error) {
+    console.error('Erro ao buscar currículo do candidato:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+};

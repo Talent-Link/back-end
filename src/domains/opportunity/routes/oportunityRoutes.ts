@@ -4,6 +4,7 @@ import {
   getAllOpportunities,
   getOpportunityById,
   getResponsesByOpportunity,
+  getCandidatesByOpportunity,
   createOpportunity,
   updateOpportunity,
   searchOpportunities,
@@ -42,6 +43,9 @@ router.get("/:id", ensureToken, getOpportunityById);
 
 // GET   /opportunities/:id/responses → só RH pode ver respostas
 router.get("/:id/responses", ensureToken, onlyRH, getResponsesByOpportunity);
+
+// GET   /opportunities/:id/candidates → só RH pode ver candidatos completos
+router.get("/:id/candidates", ensureToken, onlyRH, getCandidatesByOpportunity);
 
 // GET /opportunities/:id/candidates-count → só RH pode ver número de candidatos
 router.get("/:id/candidates-count", ensureToken, onlyRH, numeroCandidatosPorOportunidade);
