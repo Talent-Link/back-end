@@ -845,6 +845,112 @@
 /**
  * @swagger
  * /opportunities/{id}:
+ *   put:
+ *     tags: [Opportunities]
+ *     summary: Editar oportunidade
+ *     description: Atualiza uma oportunidade existente. Apenas o RH criador da oportunidade pode editá-la.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da oportunidade a ser editada
+ *         example: "clxyz123456789"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Desenvolvedor Full Stack Sênior"
+ *               description:
+ *                 type: string
+ *                 example: "Desenvolver aplicações web usando React e Node.js"
+ *               requirements:
+ *                 type: string
+ *                 example: "5+ anos React\nExperiência com Node.js\nTypeScript obrigatório"
+ *               benefits:
+ *                 type: string
+ *                 example: "Plano de saúde\nVale refeição\nHome office flexível"
+ *               location:
+ *                 type: string
+ *                 example: "São Paulo, SP - Híbrido"
+ *               companyId:
+ *                 type: string
+ *                 example: "clxyz123456789"
+ *               formId:
+ *                 type: string
+ *                 nullable: true
+ *                 example: "form_456"
+ *     responses:
+ *       200:
+ *         description: Oportunidade atualizada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Opportunity'
+ *                 - type: object
+ *                   properties:
+ *                     requirements:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["5+ anos React", "Experiência com Node.js", "TypeScript obrigatório"]
+ *                     benefits:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["Plano de saúde", "Vale refeição", "Home office flexível"]
+ *                     company:
+ *                       type: object
+ *                       properties:
+ *                         name:
+ *                           type: string
+ *                           example: "TechCorp Ltda"
+ *                         address:
+ *                           type: string
+ *                           example: "Rua da Tecnologia, 123"
+ *                     form:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "form_456"
+ *                         title:
+ *                           type: string
+ *                           example: "Formulário Técnico"
+ *       400:
+ *         description: Dados inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas RH pode editar oportunidades ou sem permissão para editar esta oportunidade
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Oportunidade não encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *   get:
  *     tags: [Opportunities]
  *     summary: Obter oportunidade por ID
