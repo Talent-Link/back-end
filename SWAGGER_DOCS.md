@@ -49,6 +49,7 @@ A documentação completa da API está disponível através do Swagger UI:
 - **Endpoints**:
   - `GET /opportunities` - Listar oportunidades
   - `POST /opportunities` - Criar oportunidade
+  - `PUT /opportunities/{id}` - Editar oportunidade
   - `GET /opportunities/{id}` - Obter oportunidade
   - `GET /opportunities/my-applications` - Minhas candidaturas
   - `POST /opportunities/search` - Buscar oportunidades
