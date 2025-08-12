@@ -25,6 +25,9 @@ router.get("/", ensureToken, getAllOpportunities);
 // GET   /opportunities/my-applications → candidato vê suas candidaturas
 router.get("/my-applications", ensureToken, getUserOpportunities);
 
+// GET /opportunities/rh → só RH pode ver suas oportunidades
+router.get("/rh", ensureToken, onlyRH, getOpportunitiesByRecruiter);
+
 // POST  /opportunities/search        → qualquer usuário autenticado
 router.post("/search", ensureToken, searchOpportunities);
 
@@ -40,6 +43,9 @@ router.get("/:id", ensureToken, getOpportunityById);
 // GET   /opportunities/:id/responses → só RH pode ver respostas
 router.get("/:id/responses", ensureToken, onlyRH, getResponsesByOpportunity);
 
+// GET /opportunities/:id/candidates-count → só RH pode ver número de candidatos
+router.get("/:id/candidates-count", ensureToken, onlyRH, numeroCandidatosPorOportunidade);
+
 // DELETE /opportunities/:responseId/withdraw → candidato retira candidatura
 router.delete("/:responseId/withdraw", ensureToken, withdrawApplication);
 
@@ -51,11 +57,5 @@ router.patch("/:id/activate", ensureToken, onlyRH, activateOpportunity);
 
 // PATCH /opportunities/:id/deactivate → só RH pode desativar oportunidade
 router.patch("/:id/deactivate", ensureToken, onlyRH, deactivateOpportunity);
-
-// GET /opportunities/rh → só RH pode ver suas oportunidades
-router.get("/rh", ensureToken, onlyRH, getOpportunitiesByRecruiter);
-
-// GET /opportunities/:id/candidates-count → só RH pode ver número de candidatos
-router.get("/:id/candidates-count", ensureToken, onlyRH, numeroCandidatosPorOportunidade);
 
 export default router;
