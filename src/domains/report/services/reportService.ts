@@ -42,6 +42,33 @@ export async function generateCandidateReportService(
     const candidate = await prisma.user.findUnique({
       where: { id: candidateId },
       include: {
+        candidateProfile: {
+          select: {
+            resumeUrl: true,
+            skills: true,
+            phoneNumber: true,
+            experiences: {
+              orderBy: { startDate: 'desc' },
+              select: {
+                position: true,
+                company: true,
+                startDate: true,
+                endDate: true,
+                description: true,
+              }
+            },
+            educations: {
+              orderBy: { startYear: 'desc' },
+              select: {
+                institution: true,
+                course: true,
+                degree: true,
+                startYear: true,
+                endYear: true,
+              }
+            }
+          }
+        },
         responses: {
           where: { opportunityId },
           include: {
@@ -78,21 +105,86 @@ export async function generateCandidateReportService(
       `[generateCandidateReportService] Responses found for formId: ${formId}`
     );
 
+    // Preparar informações do perfil do candidato (opcional)
+    let candidateProfileInfo = "";
+    if (candidate.candidateProfile) {
+      const profile = candidate.candidateProfile;
+      
+      candidateProfileInfo = `
+
+**Perfil Profissional do Candidato:**`;
+
+      if (profile.phoneNumber) {
+        candidateProfileInfo += `
+Telefone: ${profile.phoneNumber}`;
+      }
+
+      if (profile.skills && profile.skills.length > 0) {
+        candidateProfileInfo += `
+Habilidades: ${profile.skills.join(', ')}`;
+      }
+
+      if (profile.experiences && profile.experiences.length > 0) {
+        candidateProfileInfo += `
+
+**Experiências Profissionais:**`;
+        profile.experiences.forEach((exp, index) => {
+          const endDate = exp.endDate ? new Date(exp.endDate).getFullYear() : 'Atual';
+          candidateProfileInfo += `
+${index + 1}. ${exp.position} - ${exp.company} (${new Date(exp.startDate).getFullYear()} - ${endDate})`;
+          if (exp.description) {
+            candidateProfileInfo += `
+   Descrição: ${exp.description}`;
+          }
+        });
+      }
+
+      if (profile.educations && profile.educations.length > 0) {
+        candidateProfileInfo += `
+
+**Formação Acadêmica:**`;
+        profile.educations.forEach((edu, index) => {
+          const endYear = edu.endYear || 'Em andamento';
+          candidateProfileInfo += `
+${index + 1}. ${edu.course} - ${edu.institution}`;
+          if (edu.degree) {
+            candidateProfileInfo += ` (${edu.degree})`;
+          }
+          candidateProfileInfo += ` (${edu.startYear} - ${endYear})`;
+        });
+      }
+
+      if (profile.resumeUrl) {
+        candidateProfileInfo += `
+
+**Currículo:** Disponível em PDF (URL: ${profile.resumeUrl})
+Nota: O candidato possui currículo cadastrado. As informações acima complementam os dados do CV.`;
+      } else {
+        candidateProfileInfo += `
+
+**Currículo:** Não disponível - candidato não cadastrou currículo em PDF.`;
+      }
+    } else {
+      candidateProfileInfo = `
+
+**Perfil Profissional:** Candidato não completou o perfil profissional na plataforma.
+**Currículo:** Não disponível.`;
+    }
+
     const prompt = `
-Você é um assistente de RH. Analise o candidato com base nas informações abaixo e gere um relatório estruturado em formato JSON, seguindo exatamente o modelo fornecido.
+Você é um assistente de RH especialista em análise de candidatos. Analise o candidato com base nas informações abaixo e gere um relatório estruturado em formato JSON.
 
 **Resumo do Candidato:**
 Nome: ${candidate.name}
-E-mail: ${candidate.email}
+E-mail: ${candidate.email}${candidateProfileInfo}
 
-**Formulário:**
+**Formulário de Candidatura:**
 Título: ${response.opportunity.form?.title || "Título não fornecido"}
 Descrição: ${
       response.opportunity.form?.description || "Descrição não fornecida"
     }
-Objetivo: Avaliar a adequação do candidato à vaga descrita no formulário.
 
-**Respostas do Candidato:**
+**Respostas do Formulário:**
 ${
   typeof response.answers === "object" && response.answers !== null
     ? Object.entries(response.answers)
@@ -101,25 +193,30 @@ ${
     : "Respostas não disponíveis"
 }
 
-**Contexto da Vaga:**
-Com base no título e na descrição do formulário, identifique a área da vaga (exemplo: tecnologia, marketing, vendas, etc.) e os requisitos implícitos ou explícitos para o candidato.
+**Instruções de Análise:**
+1. **Análise Completa:** Considere TODAS as informações disponíveis - respostas do formulário, experiências profissionais, formação acadêmica, habilidades e disponibilidade de currículo.
 
-**Tarefa:**
-1. Avalie as respostas do candidato em relação à vaga descrita no formulário.
-2. Identifique os pontos fortes e fracos do candidato com base nas respostas fornecidas.
-3. Forneça um resumo detalhado sobre a adequação do candidato à vaga, destacando se ele atende aos requisitos e se possui as habilidades necessárias.
-4. Caso as informações sejam insuficientes, indique quais informações adicionais seriam necessárias para uma avaliação mais completa.
+2. **Adequação à Vaga:** Avalie como o perfil completo do candidato se alinha com os requisitos da vaga baseando-se no título e descrição do formulário.
+
+3. **Pontos Fortes:** Identifique competências, experiências e qualificações que tornam o candidato atrativo para a posição.
+
+4. **Pontos de Atenção:** Identifique lacunas, inexperiências ou aspectos que podem precisar de desenvolvimento.
+
+5. **Recomendações:** Sugira próximos passos no processo seletivo e informações adicionais que seriam úteis.
 
 **Formato de resposta esperado (JSON):**
 
 {
-  "resumo": "Resumo geral do candidato e sua adequação à vaga.",
-  "pontos_fortes": "Liste os principais pontos fortes do candidato.",
-  "pontos_fracos": "Liste os principais pontos fracos ou pontos a melhorar.",
-  "informacoes_adicionais": "Informe quais informações adicionais seriam necessárias para uma avaliação mais completa, se aplicável."
+  "resumo": "Resumo executivo do candidato, destacando sua adequação geral à vaga com base em todas as informações disponíveis (formulário + perfil profissional).",
+  "pontos_fortes": "Liste os principais pontos fortes do candidato, incluindo experiências relevantes, habilidades técnicas, formação e outros diferenciais identificados.",
+  "pontos_fracos": "Liste os principais pontos fracos, lacunas de experiência, áreas para desenvolvimento ou aspectos que podem ser desafios para a vaga.",
+  "adequacao_vaga": "Análise específica de como o candidato se encaixa na vaga descrita, considerando requisitos técnicos, experiência e fit cultural.",
+  "proximos_passos": "Recomendações para as próximas etapas do processo seletivo (ex: entrevista técnica, teste prático, verificação de referências).",
+  "informacoes_adicionais": "Quais informações adicionais seriam valiosas para uma avaliação mais completa do candidato."
 }
+  informe sen conseguiu encontrar o curriculo anexado, respondendo sim ou não
 
-Responda apenas com o JSON, sem explicações adicionais, sem crases e sem markdown. Seja extremamente organizado e claro.
+IMPORTANTE: Responda apenas com o JSON válido, sem crases, sem markdown, sem explicações adicionais. Base sua análise em TODAS as informações fornecidas, tanto do formulário quanto do perfil profissional.
 `;
 
     console.log(
