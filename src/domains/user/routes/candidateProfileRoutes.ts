@@ -5,7 +5,8 @@ import {
   uploadResume,
   deleteResume,
   getCandidateProfileById,
-  getCandidateResume
+  getCandidateResume,
+  getCandidateAdditionalInfo
 } from '../controllers/candidateProfileController';
 import { ensureToken, onlyCandidato, onlyRH } from '../../../shared/middlewares/jwtAuth';
 
@@ -20,5 +21,6 @@ router.delete('/profile/resume', ensureToken, onlyCandidato, deleteResume);
 // Rotas para RH (visualizar perfil de candidatos)
 router.get('/profile/:candidateId', ensureToken, onlyRH, getCandidateProfileById);
 router.get('/profile/:candidateId/resume', ensureToken, onlyRH, getCandidateResume);
+router.get('/profile/:candidateId/additional-info', ensureToken, onlyRH, getCandidateAdditionalInfo);
 
 export default router;
