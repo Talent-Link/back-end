@@ -2707,4 +2707,600 @@
  *               $ref: '#/components/schemas/Error'
  */
 
+/**
+ * @swagger
+ * /candidates/profile/{candidateId}/additional-info:
+ *   get:
+ *     tags: [Users]
+ *     summary: Obter informações adicionais do candidato (RH)
+ *     description: Retorna informações detalhadas e organizadas do candidato incluindo experiências profissionais, formações acadêmicas, habilidades técnicas e estatísticas do perfil. Disponível apenas para usuários RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: candidateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do candidato
+ *         example: "cmdre8nev0000q0k4m8q21nqs"
+ *     responses:
+ *       200:
+ *         description: Informações adicionais do candidato retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 candidate:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "cmdre8nev0000q0k4m8q21nqs"
+ *                     name:
+ *                       type: string
+ *                       example: "Filip Sousa Dantas"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "filip@email.com"
+ *                     photoUrl:
+ *                       type: string
+ *                       nullable: true
+ *                       example: "https://photo.url/avatar.jpg"
+ *                     memberSince:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2025-01-15T00:00:00.000Z"
+ *                 contact:
+ *                   type: object
+ *                   properties:
+ *                     phoneNumber:
+ *                       type: string
+ *                       nullable: true
+ *                       example: "+55 11 99999-9999"
+ *                 skills:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["JavaScript", "React", "Node.js", "PostgreSQL", "Docker"]
+ *                 experiences:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "exp_1"
+ *                       position:
+ *                         type: string
+ *                         example: "Desenvolvedor Full Stack"
+ *                       company:
+ *                         type: string
+ *                         example: "Tech Startup"
+ *                       startDate:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2023-06-01T00:00:00.000Z"
+ *                       endDate:
+ *                         type: string
+ *                         format: date-time
+ *                         nullable: true
+ *                         example: null
+ *                       description:
+ *                         type: string
+ *                         nullable: true
+ *                         example: "Desenvolvimento de aplicações web com React e Node.js..."
+ *                       isCurrentJob:
+ *                         type: boolean
+ *                         example: true
+ *                       duration:
+ *                         type: string
+ *                         example: "1 ano e 7 meses"
+ *                 educations:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "edu_1"
+ *                       institution:
+ *                         type: string
+ *                         example: "Universidade Federal"
+ *                       course:
+ *                         type: string
+ *                         example: "Ciência da Computação"
+ *                       degree:
+ *                         type: string
+ *                         example: "Bacharel"
+ *                       startYear:
+ *                         type: integer
+ *                         example: 2018
+ *                       endYear:
+ *                         type: integer
+ *                         nullable: true
+ *                         example: 2022
+ *                       isOngoing:
+ *                         type: boolean
+ *                         example: false
+ *                       status:
+ *                         type: string
+ *                         example: "Concluído"
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     totalSkills:
+ *                       type: integer
+ *                       example: 5
+ *                     totalExperiences:
+ *                       type: integer
+ *                       example: 2
+ *                     totalEducations:
+ *                       type: integer
+ *                       example: 1
+ *                     hasResume:
+ *                       type: boolean
+ *                       example: true
+ *                     profileCompleteness:
+ *                       type: integer
+ *                       description: "Percentual de completude do perfil (0-100)"
+ *                       example: 100
+ *                 lastUpdated:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-08-13T00:00:00.000Z"
+ *       404:
+ *         description: Informações adicionais não encontradas - candidato não completou o perfil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Informações adicionais não encontradas"
+ *                 details:
+ *                   type: string
+ *                   example: "O candidato ainda não completou seu perfil profissional na plataforma"
+ *       403:
+ *         description: Acesso negado - apenas usuários RH podem acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /reports/analytics:
+ *   get:
+ *     tags: [Reports]
+ *     summary: Obter analytics do dashboard
+ *     description: Retorna métricas gerais como total de candidatos, taxa de aprovação e vagas ativas para um período específico. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de início do período (formato YYYY-MM-DD)
+ *         example: "2025-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de fim do período (formato YYYY-MM-DD)
+ *         example: "2025-08-13"
+ *     responses:
+ *       200:
+ *         description: Analytics recuperadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Analytics do dashboard recuperadas com sucesso."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalCandidates:
+ *                       type: integer
+ *                       example: 120
+ *                       description: "Total de candidatos no período"
+ *                     approvalRate:
+ *                       type: integer
+ *                       example: 35
+ *                       description: "Taxa de aprovação em percentual"
+ *                     activeOpportunities:
+ *                       type: integer
+ *                       example: 4
+ *                       description: "Número de vagas ativas"
+ *                     periodInfo:
+ *                       type: object
+ *                       properties:
+ *                         startDate:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2025-07-14T00:00:00.000Z"
+ *                         endDate:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2025-08-13T00:00:00.000Z"
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas RH pode acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /reports/candidates-by-month:
+ *   get:
+ *     tags: [Reports]
+ *     summary: Obter candidatos por mês
+ *     description: Retorna dados de candidaturas mensais para um ano específico, incluindo total de candidatos e qualificados por mês. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         description: Ano para análise (padrão é o ano atual)
+ *         example: 2025
+ *     responses:
+ *       200:
+ *         description: Dados de candidatos por mês recuperados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Dados de candidatos por mês recuperados com sucesso."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       month:
+ *                         type: string
+ *                         example: "Janeiro"
+ *                       candidates:
+ *                         type: integer
+ *                         example: 25
+ *                         description: "Total de candidatos no mês"
+ *                       qualified:
+ *                         type: integer
+ *                         example: 8
+ *                         description: "Candidatos qualificados no mês"
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas RH pode acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /reports/opportunity-performance:
+ *   get:
+ *     tags: [Reports]
+ *     summary: Obter desempenho por vaga
+ *     description: Retorna métricas de desempenho para cada vaga, incluindo número de candidatos, qualificados e taxa de aprovação. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de início do período (formato YYYY-MM-DD)
+ *         example: "2025-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de fim do período (formato YYYY-MM-DD)
+ *         example: "2025-08-13"
+ *     responses:
+ *       200:
+ *         description: Desempenho por vaga recuperado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Desempenho por vaga recuperado com sucesso."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       opportunityId:
+ *                         type: string
+ *                         example: "clxyz123456789"
+ *                       title:
+ *                         type: string
+ *                         example: "Senior Frontend Developer"
+ *                       candidates:
+ *                         type: integer
+ *                         example: 35
+ *                         description: "Número total de candidatos"
+ *                       qualified:
+ *                         type: integer
+ *                         example: 12
+ *                         description: "Número de candidatos qualificados"
+ *                       approvalRate:
+ *                         type: integer
+ *                         example: 34
+ *                         description: "Taxa de aprovação em percentual"
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas RH pode acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /reports/candidate-status:
+ *   get:
+ *     tags: [Reports]
+ *     summary: Obter distribuição de status dos candidatos
+ *     description: Retorna a distribuição dos candidatos por status (aprovado, rejeitado, pendente, etc.) com contagens e percentuais. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de início do período (formato YYYY-MM-DD)
+ *         example: "2025-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de fim do período (formato YYYY-MM-DD)
+ *         example: "2025-08-13"
+ *     responses:
+ *       200:
+ *         description: Distribuição de status recuperada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Distribuição de status dos candidatos recuperada com sucesso."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       status:
+ *                         type: string
+ *                         example: "APROVADO"
+ *                         description: "Status do candidato"
+ *                       count:
+ *                         type: integer
+ *                         example: 42
+ *                         description: "Número de candidatos com este status"
+ *                       percentage:
+ *                         type: integer
+ *                         example: 35
+ *                         description: "Percentual de candidatos com este status"
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas RH pode acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /reports/opportunity-details:
+ *   get:
+ *     tags: [Reports]
+ *     summary: Obter detalhamento por vaga
+ *     description: Retorna tabela detalhada com informações de cada vaga incluindo título, número de candidatos, qualificados e taxa de aprovação. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de início do período (formato YYYY-MM-DD)
+ *         example: "2025-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de fim do período (formato YYYY-MM-DD)
+ *         example: "2025-08-13"
+ *     responses:
+ *       200:
+ *         description: Detalhamento por vaga recuperado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Detalhamento por vaga recuperado com sucesso."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       title:
+ *                         type: string
+ *                         example: "Senior Frontend Developer"
+ *                         description: "Título da vaga"
+ *                       candidates:
+ *                         type: integer
+ *                         example: 35
+ *                         description: "Número total de candidatos"
+ *                       qualified:
+ *                         type: integer
+ *                         example: 12
+ *                         description: "Número de candidatos qualificados"
+ *                       rate:
+ *                         type: integer
+ *                         example: 34
+ *                         description: "Taxa de aprovação em percentual"
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas RH pode acessar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /reports/export:
+ *   get:
+ *     tags: [Reports]
+ *     summary: Exportar relatório
+ *     description: Exporta relatórios em diferentes formatos (PDF, Excel, CSV) para download. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [pdf, excel, csv]
+ *         description: Formato do arquivo de exportação
+ *         example: "excel"
+ *       - in: query
+ *         name: reportType
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [dashboard, opportunities, candidates]
+ *         description: Tipo de relatório a ser exportado
+ *         example: "dashboard"
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de início do período (formato YYYY-MM-DD)
+ *         example: "2025-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data de fim do período (formato YYYY-MM-DD)
+ *         example: "2025-08-13"
+ *     responses:
+ *       200:
+ *         description: Arquivo gerado e pronto para download
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *         headers:
+ *           Content-Disposition:
+ *             description: Nome do arquivo para download
+ *             schema:
+ *               type: string
+ *               example: "attachment; filename=\"talentlink_dashboard_2025-08-13.excel\""
+ *       400:
+ *         description: Parâmetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Formato inválido. Use: pdf, excel ou csv"
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas RH pode exportar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 export {};
