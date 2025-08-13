@@ -14,6 +14,8 @@ import { reportRoutes, dashboardRoutes } from "./domains/report";
 import { feedbackRouter } from "./domains/notification";
 import { companyRouter } from "./domains/company";
 import { opportunityRoutes } from "./domains/opportunity";
+import healthRoutes from "./routes/health";
+import { keepAliveService } from "./services/keepAlive";
 
 dotenv.config();
 
@@ -68,6 +70,9 @@ app.use("/notifications", feedbackRouter);
 app.use("/empresa", companyRouter);
 app.use("/opportunities", opportunityRoutes);
 app.use("/bank-talents", bankTalentsRouter);
+
+// Health check routes (deve vir antes do Swagger para não conflitar)
+app.use("/", healthRoutes);
 
 // Swagger Documentation
 setupSwagger(app);
