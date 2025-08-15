@@ -341,7 +341,7 @@ export class EmailService {
               
               <div class="cta-container">
                 <a href="https://talentlink-wd88.onrender.com" class="cta-button">
-                  🚀 Acessar Meu Portal
+                  🚀 Acessar Minha Conta
                 </a>
               </div>
               

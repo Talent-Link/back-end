@@ -13,6 +13,13 @@ dist/
 # Ignore temporary files
 *.tmp
 *.log
+cookies.txt
+
+# Ignore test files
+*test*.mjs
+*debug*.js
+api-test.*
+test-api.*
 
 # Ignore IDE files
 .vscode/
@@ -21,3 +28,7 @@ dist/
 # Ignore OS files
 .DS_Store
 Thumbs.db
+
+# Ignore example/demo files
+frontend-examples/
+examples/

@@ -90,9 +90,40 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
       // Email é opcional, não quebra o fluxo da candidatura
     }
 
+    // 📋 Criar feedback automático no sistema
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: 'FEEDBACK',
+          title: `✅ Candidatura confirmada - ${response.opportunity.title}`,
+          message: `Olá ${response.candidate.name || 'Candidato'}! 🎉
+
+Sua candidatura para a vaga "${response.opportunity.title}" na empresa "${response.opportunity.company.name}" foi recebida com sucesso!
+
+🚀 Próximos passos:
+• Nossa equipe de RH irá analisar seu perfil
+• Se aprovado, entraremos em contato por email ou telefone
+• Você receberá atualizações sobre o status da sua candidatura
+
+💡 Dica: Mantenha seu perfil sempre atualizado e continue explorando outras oportunidades disponíveis.
+
+Obrigado por escolher a TalentLink para impulsionar sua carreira! 💼`,
+          responseId: response.id,
+          status: 'RECEIVED',
+          read: false
+        }
+      });
+
+      console.log(`[submitResponse] Feedback automático criado para usuário ${user.id}`);
+    } catch (feedbackError) {
+      console.error('[submitResponse] Erro ao criar feedback automático:', feedbackError);
+      // Feedback é opcional, não quebra o fluxo da candidatura
+    }
+
     res.status(201).json({
       ...response,
-      message: "Candidatura enviada com sucesso! Você receberá um email de confirmação."
+      message: "Candidatura enviada com sucesso! Você receberá um email de confirmação e poderá acompanhar o status através das suas notificações."
     });
   } catch (error) {
     console.error("Erro ao enviar respostas:", error);
