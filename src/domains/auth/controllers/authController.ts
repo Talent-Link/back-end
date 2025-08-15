@@ -32,6 +32,22 @@ export function handleGoogleCallback(req: Request, res: Response): void {
     return;
   }
 
+  // 🔧 Configuração inteligente da URL do frontend
+  const getFrontendUrl = () => {
+    if (process.env.FRONTEND_URL) {
+      return process.env.FRONTEND_URL;
+    }
+    
+    // Se não está configurado, detecta automaticamente baseado no ambiente
+    if (process.env.NODE_ENV === 'production') {
+      return 'https://talent-link-five.vercel.app';
+    }
+    
+    return 'http://localhost:3000';
+  };
+
+  const frontendUrl = getFrontendUrl();
+
   const token = jwt.sign(
     {
       sub: user.id,
@@ -115,7 +131,7 @@ export function handleGoogleCallback(req: Request, res: Response): void {
                   type: 'GOOGLE_AUTH_SUCCESS',
                   token: token,
                   user: user
-                }, '${process.env.FRONTEND_URL || 'http://localhost:3000'}');
+                }, '${frontendUrl}');
                 setTimeout(() => {
                   window.close();
                 }, 1500);
@@ -130,8 +146,8 @@ export function handleGoogleCallback(req: Request, res: Response): void {
       </html>
     `);
   } else {
-    const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
-    res.redirect(frontendUrl);
+    const callbackUrl = `${frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`;
+    res.redirect(callbackUrl);
   }
 }
 
