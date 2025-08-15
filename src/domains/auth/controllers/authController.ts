@@ -33,20 +33,38 @@ export function handleGoogleCallback(req: Request, res: Response): void {
   }
 
   // 🔧 Configuração inteligente da URL do frontend
-  const getFrontendUrl = () => {
+  const getFrontendUrl = (req: Request) => {
+    // 🎯 Detecta se a requisição veio de localhost (desenvolvimento)
+    const referer = req.get('Referer') || req.get('Origin');
+    const isLocalRequest = referer && (
+      referer.includes('localhost:3000') || 
+      referer.includes('127.0.0.1:3000')
+    );
+
+    // Se veio de localhost, redireciona para localhost
+    if (isLocalRequest) {
+      console.log('🏠 Requisição local detectada, redirecionando para localhost:3000');
+      return 'http://localhost:3000';
+    }
+
+    // Se tem FRONTEND_URL configurado, usa ela
     if (process.env.FRONTEND_URL) {
+      console.log('🌐 Usando FRONTEND_URL configurado:', process.env.FRONTEND_URL);
       return process.env.FRONTEND_URL;
     }
     
-    // Se não está configurado, detecta automaticamente baseado no ambiente
+    // Se está em produção, usa Vercel
     if (process.env.NODE_ENV === 'production') {
+      console.log('🚀 Produção detectada, redirecionando para Vercel');
       return 'https://talent-link-five.vercel.app';
     }
     
+    // Fallback para localhost
+    console.log('🔄 Fallback para localhost:3000');
     return 'http://localhost:3000';
   };
 
-  const frontendUrl = getFrontendUrl();
+  const frontendUrl = getFrontendUrl(req);
 
   const token = jwt.sign(
     {
