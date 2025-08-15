@@ -3303,4 +3303,265 @@
  *               $ref: '#/components/schemas/Error'
  */
 
+/**
+ * @swagger
+ * /resume-analysis/analyze:
+ *   post:
+ *     tags: [Resume Analysis]
+ *     summary: Analisar currículo do candidato
+ *     description: Usa IA para analisar o perfil profissional do candidato e fornecer sugestões personalizadas de melhorias no currículo. Disponível apenas para candidatos autenticados.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Análise do currículo realizada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Análise do currículo realizada com sucesso"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     candidate:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "clxyz123456789"
+ *                         name:
+ *                           type: string
+ *                           example: "João Silva"
+ *                         email:
+ *                           type: string
+ *                           example: "joao@email.com"
+ *                     analysis:
+ *                       type: object
+ *                       properties:
+ *                         overall_score:
+ *                           type: integer
+ *                           minimum: 0
+ *                           maximum: 100
+ *                           example: 75
+ *                           description: "Pontuação geral do currículo (0-100)"
+ *                         summary:
+ *                           type: string
+ *                           example: "Perfil sólido com boa experiência técnica. Recomendações para melhorar a apresentação das conquistas."
+ *                         strengths:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                           example: ["Experiência diversificada em tecnologias", "Boa progressão na carreira"]
+ *                         suggestions:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                           example: ["Quantifique suas conquistas com números", "Adicione mais detalhes sobre projetos realizados"]
+ *                         improvements:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                           example: ["Incluir mais certificações", "Melhorar descrição das experiências"]
+ *                     profile_stats:
+ *                       type: object
+ *                       properties:
+ *                         total_skills:
+ *                           type: integer
+ *                           example: 8
+ *                         total_experiences:
+ *                           type: integer
+ *                           example: 3
+ *                         total_educations:
+ *                           type: integer
+ *                           example: 1
+ *                         has_resume:
+ *                           type: boolean
+ *                           example: true
+ *                     analyzed_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2025-08-15T10:30:00.000Z"
+ *       400:
+ *         description: Dados insuficientes para análise
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Dados insuficientes para análise"
+ *                 details:
+ *                   type: string
+ *                   example: "Para receber uma análise completa, adicione pelo menos algumas habilidades, experiências ou formação acadêmica ao seu perfil"
+ *                 suggestions:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["Adicione suas principais habilidades técnicas", "Inclua suas experiências profissionais anteriores"]
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acesso negado - apenas candidatos podem analisar currículo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Perfil profissional não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Perfil profissional não encontrado"
+ *                 details:
+ *                   type: string
+ *                   example: "Complete seu perfil profissional antes de solicitar análise do currículo"
+ *                 action:
+ *                   type: string
+ *                   example: "Acesse 'Meu Perfil' e complete as informações básicas"
+ *       408:
+ *         description: Timeout na análise
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Timeout na análise do currículo"
+ *                 details:
+ *                   type: string
+ *                   example: "A análise está demorando mais que o esperado. Tente novamente em alguns instantes."
+ *       429:
+ *         description: Limite de requisições excedido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Muitas solicitações de análise"
+ *                 details:
+ *                   type: string
+ *                   example: "Limite temporário atingido. Aguarde alguns minutos antes de tentar novamente."
+ */
+
+/**
+ * @swagger
+ * /resume-analysis/test:
+ *   get:
+ *     tags: [Resume Analysis]
+ *     summary: Testar serviço de análise de currículo
+ *     description: Verifica se o serviço de análise de IA está operacional e disponível.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Serviço de análise operacional
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Serviço de análise operacional"
+ *                 status:
+ *                   type: string
+ *                   enum: [online, offline, error]
+ *                   example: "online"
+ *                 provider:
+ *                   type: string
+ *                   example: "Groq API"
+ *                 model:
+ *                   type: string
+ *                   example: "llama-3.3-70b-versatile"
+ *                 tested_at:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-08-15T10:30:00.000Z"
+ *       503:
+ *         description: Serviço de análise indisponível
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Serviço de análise indisponível"
+ *                 status:
+ *                   type: string
+ *                   example: "offline"
+ *                 details:
+ *                   type: string
+ *                   example: "O serviço de IA está temporariamente indisponível. Tente novamente mais tarde."
+ */
+
+/**
+ * @swagger
+ * /resume-analysis/tips:
+ *   get:
+ *     tags: [Resume Analysis]
+ *     summary: Obter dicas gerais de melhoria de currículo
+ *     description: Retorna dicas gerais e boas práticas para melhorar currículos, sem necessidade de análise personalizada.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dicas de melhoria de currículo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Dicas de melhoria de currículo"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     structure:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["Use um formato limpo e profissional", "Mantenha o currículo em 1-2 páginas máximo"]
+ *                     content:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["Quantifique suas conquistas sempre que possível", "Destaque resultados e impactos gerados"]
+ *                     skills:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["Liste habilidades técnicas atuais e relevantes", "Inclua certificações e cursos recentes"]
+ *                     common_mistakes:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["Informações pessoais desnecessárias", "Erros de ortografia e gramática"]
+ *                 recommendation:
+ *                   type: string
+ *                   example: "Para uma análise personalizada do seu currículo, use o endpoint de análise individualizada."
+ *       401:
+ *         description: Token inválido ou não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 export {};
