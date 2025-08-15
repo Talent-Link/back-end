@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../../../shared/database/prisma";
+import { EmailService } from "../../../shared/services/emailService";
 
 export async function submitResponse(req: Request, res: Response): Promise<void> {
   try {
@@ -52,9 +53,47 @@ export async function submitResponse(req: Request, res: Response): Promise<void>
         opportunity: { connect: { id: opportunityId } },
         answers,
       },
+      include: {
+        candidate: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        opportunity: {
+          select: {
+            title: true,
+            company: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
     });
 
-    res.status(201).json(response);
+    // 📧 Enviar email de confirmação de candidatura
+    try {
+      await EmailService.sendApplicationConfirmation({
+        candidateName: response.candidate.name || 'Candidato',
+        candidateEmail: response.candidate.email,
+        opportunityTitle: response.opportunity.title,
+        companyName: response.opportunity.company.name,
+        applicationDate: response.createdAt
+      });
+      
+      console.log(`[submitResponse] Email de confirmação enviado para ${response.candidate.email}`);
+    } catch (emailError) {
+      console.error('[submitResponse] Erro ao enviar email de confirmação:', emailError);
+      // Email é opcional, não quebra o fluxo da candidatura
+    }
+
+    res.status(201).json({
+      ...response,
+      message: "Candidatura enviada com sucesso! Você receberá um email de confirmação."
+    });
   } catch (error) {
     console.error("Erro ao enviar respostas:", error);
     res.status(500).send("Erro interno ao enviar respostas.");

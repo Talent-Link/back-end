@@ -3564,4 +3564,134 @@
  *               $ref: '#/components/schemas/Error'
  */
 
+/**
+ * @swagger
+ * /email-test/test-connection:
+ *   get:
+ *     tags: [Email Service]
+ *     summary: Testar conexão do serviço de email
+ *     description: Verifica se o serviço de email está configurado corretamente e consegue se conectar ao servidor SMTP.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Conexão com serviço de email bem-sucedida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Serviço de email conectado com sucesso"
+ *                 status:
+ *                   type: string
+ *                   example: "online"
+ *                 provider:
+ *                   type: string
+ *                   example: "Nodemailer"
+ *                 tested_at:
+ *                   type: string
+ *                   format: date-time
+ *       503:
+ *         description: Falha na conexão com o serviço de email
+ *       401:
+ *         description: Token inválido ou não fornecido
+ */
+
+/**
+ * @swagger
+ * /email-test/send-test:
+ *   post:
+ *     tags: [Email Service]
+ *     summary: Enviar email de teste
+ *     description: Envia um email de teste para verificar se o serviço está funcionando. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "teste@exemplo.com"
+ *                 description: Email de destino (opcional, usa o email do usuário se não fornecido)
+ *     responses:
+ *       200:
+ *         description: Email de teste enviado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Email de teste enviado com sucesso"
+ *                 sentTo:
+ *                   type: string
+ *                   example: "teste@exemplo.com"
+ *                 sent_at:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Email de destino obrigatório
+ *       403:
+ *         description: Acesso negado. Apenas RH pode enviar emails de teste
+ *       500:
+ *         description: Erro ao enviar email
+ */
+
+/**
+ * @swagger
+ * /email-test/test-application:
+ *   post:
+ *     tags: [Email Service]
+ *     summary: Testar email de confirmação de candidatura
+ *     description: Envia um email de teste usando o template de confirmação de candidatura. Disponível apenas para RH.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "teste@exemplo.com"
+ *                 description: Email de destino (opcional, usa o email do usuário se não fornecido)
+ *     responses:
+ *       200:
+ *         description: Email de teste de candidatura enviado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Email de teste de candidatura enviado com sucesso"
+ *                 template:
+ *                   type: string
+ *                   example: "Confirmação de Candidatura"
+ *                 sentTo:
+ *                   type: string
+ *                   example: "teste@exemplo.com"
+ *                 sent_at:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Email de destino obrigatório
+ *       403:
+ *         description: Acesso negado. Apenas RH pode testar emails
+ *       500:
+ *         description: Erro ao enviar email de teste
+ */
+
 export {};
