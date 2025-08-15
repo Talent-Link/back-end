@@ -3309,7 +3309,7 @@
  *   post:
  *     tags: [Resume Analysis]
  *     summary: Analisar currículo do candidato
- *     description: Usa IA para analisar o perfil profissional do candidato e fornecer sugestões personalizadas de melhorias no currículo. Disponível apenas para candidatos autenticados.
+ *     description: Usa IA (Google Gemini) para analisar o perfil profissional do candidato e fornecer sugestões personalizadas de melhorias no currículo. Disponível apenas para candidatos autenticados.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -3484,10 +3484,10 @@
  *                   example: "online"
  *                 provider:
  *                   type: string
- *                   example: "Groq API"
+ *                   example: "Google Gemini API"
  *                 model:
  *                   type: string
- *                   example: "llama-3.3-70b-versatile"
+ *                   example: "gemini-2.0-flash"
  *                 tested_at:
  *                   type: string
  *                   format: date-time

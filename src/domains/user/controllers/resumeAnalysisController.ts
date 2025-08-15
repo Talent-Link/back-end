@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { GroqService } from "../../../shared/services/groqService";
+import { GeminiService } from "../../../shared/services/geminiService";
 import prisma from "../../../shared/database/prisma";
 
 /**
@@ -89,8 +89,8 @@ export async function analyzeCandidateResume(req: Request, res: Response): Promi
       return;
     }
 
-    // Realizar análise com Groq
-    const analysis = await GroqService.analyzeCurriculum(candidateData);
+    // Realizar análise com Gemini
+    const analysis = await GeminiService.analyzeCurriculum(candidateData);
 
     // Salvar análise no histórico (opcional - implementar tabela se necessário)
     console.log(`[analyzeCandidateResume] Análise concluída - Score: ${analysis.overall_score}/100`);
@@ -159,14 +159,14 @@ export async function testAnalysisService(req: Request, res: Response): Promise<
   try {
     console.log("[testAnalysisService] Testando serviço de análise...");
 
-    const isWorking = await GroqService.testConnection();
+    const isWorking = await GeminiService.testConnection();
 
     if (isWorking) {
       res.status(200).json({
         message: "Serviço de análise operacional",
         status: "online",
-        provider: "Groq API",
-        model: "llama-3.3-70b-versatile",
+        provider: "Google Gemini API",
+        model: "gemini-2.0-flash",
         tested_at: new Date().toISOString()
       });
     } else {
