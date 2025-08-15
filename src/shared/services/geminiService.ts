@@ -226,7 +226,7 @@ Por favor, analise este currículo e retorne APENAS um JSON válido com a seguin
       
       if (!jsonMatch) {
         // Se não encontrar JSON, criar estrutura básica
-        console.warn('[GroqService] JSON não encontrado na resposta, criando estrutura básica');
+        console.warn('[GeminiService] JSON não encontrado na resposta, criando estrutura básica');
         return this.createFallbackAnalysis(analysisText);
       }
 
@@ -243,7 +243,7 @@ Por favor, analise este currículo e retorne APENAS um JSON válido com a seguin
       };
 
     } catch (error) {
-      console.warn('[GroqService] Erro ao processar JSON da análise:', error);
+      console.warn('[GeminiService] Erro ao processar JSON da análise:', error);
       return this.createFallbackAnalysis(analysisText);
     }
   }
@@ -313,4 +313,69 @@ Por favor, analise este currículo e retorne APENAS um JSON válido com a seguin
       return false;
     }
   }
+
+  /**
+   * Função genérica para buscar resposta do Gemini
+   */
+  static async fetchGeminiResponse(prompt: string): Promise<string> {
+    try {
+      console.log('[GeminiService] Iniciando requisição genérica ao Gemini...');
+
+      const response = await axios.post<GeminiResponse>(
+        GEMINI_API_URL,
+        {
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 3000,
+            topP: 0.95
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-goog-api-key': GEMINI_API_KEY
+          },
+          timeout: 45000 // 45 segundos para relatórios mais complexos
+        }
+      );
+
+      if (!response.data.candidates || response.data.candidates.length === 0) {
+        throw new Error('Resposta inválida da API Gemini');
+      }
+
+      const responseText = response.data.candidates[0].content.parts[0].text;
+      console.log(`[GeminiService] Resposta genérica obtida com sucesso. Tokens: ${response.data.usageMetadata?.totalTokenCount || 'N/A'}`);
+
+      return responseText;
+
+    } catch (error) {
+      console.error('[GeminiService] Erro na requisição genérica:', error);
+      
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error('Timeout na geração do conteúdo. Tente novamente.');
+        } else if (error.response?.status === 401 || error.response?.status === 403) {
+          throw new Error('Erro de autenticação com a API Gemini.');
+        } else if (error.response?.status === 429) {
+          throw new Error('Limite de requisições excedido. Tente novamente em alguns minutos.');
+        } else if (error.response?.status === 400) {
+          throw new Error('Erro na requisição. Verifique os dados enviados.');
+        }
+      }
+      
+      throw new Error('Erro interno na geração do conteúdo. Tente novamente.');
+    }
+  }
 }
+
+// Exportar função para compatibilidade
+export const fetchGeminiResponse = GeminiService.fetchGeminiResponse;
