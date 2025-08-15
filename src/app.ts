@@ -31,7 +31,7 @@ const corsOptions = {
     "http://localhost:3000",
     "https://localhost:3000", 
     "https://talentlink-wd88.onrender.com",
-    "https://talent-link-front.vercel.app",
+    "https://talent-link-five.vercel.app/",
     /\.vercel\.app$/,
     /\.onrender\.com$/
   ],
