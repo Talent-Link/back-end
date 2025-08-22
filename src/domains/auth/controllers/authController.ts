@@ -84,7 +84,15 @@ export function handleGoogleCallback(req: Request, res: Response): void {
   };
 
   const state = (req.query.state as string) || '';
-  const isPopup = state.includes('popup=true') || (req as any).session?.isPopup === true;
+  const isPopup = state.includes('popup=true') || 
+                  (req as any).session?.isPopup === true ||
+                  req.get('Referer')?.includes('localhost:3000'); // 🔧 Detecta automaticamente se veio de localhost
+
+  console.log('🔍 Debug popup detection:');
+  console.log('  - state:', state);
+  console.log('  - session.isPopup:', (req as any).session?.isPopup);
+  console.log('  - referer:', req.get('Referer'));
+  console.log('  - isPopup final:', isPopup);
   
   if ((req as any).session?.isPopup) {
     delete (req as any).session.isPopup;
