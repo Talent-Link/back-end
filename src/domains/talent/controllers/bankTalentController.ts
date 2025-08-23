@@ -88,6 +88,80 @@ export async function favoriteCandidate(req: Request, res: Response): Promise<vo
   }
 }
 
+// Função para verificar se um candidato está favoritado
+export async function isCandidateFavorited(req: Request, res: Response): Promise<void> {
+  try {
+    const user = req.user as any;
+    const { candidateId } = req.params;
+
+    if (!user || user.userType !== "RH") {
+      res.status(403).json({ 
+        success: false,
+        message: "Apenas RH pode verificar candidatos favoritados." 
+      });
+      return;
+    }
+
+    if (!candidateId) {
+      res.status(400).json({ 
+        success: false,
+        message: "ID do candidato é obrigatório." 
+      });
+      return;
+    }
+
+    // Verifica se o candidato existe
+    const candidate = await prisma.user.findUnique({ 
+      where: { id: candidateId },
+      select: { id: true, userType: true, name: true, email: true }
+    });
+
+    if (!candidate || candidate.userType !== "CANDIDATO") {
+      res.status(404).json({ 
+        success: false,
+        message: "Candidato não encontrado." 
+      });
+      return;
+    }
+
+    // Verifica se está favoritado
+    const favorite = await prisma.favoriteCandidate.findFirst({
+      where: { 
+        candidateId, 
+        recruiterId: user.id 
+      },
+      select: { 
+        id: true, 
+        createdAt: true 
+      }
+    });
+
+    const isFavorited = !!favorite;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        candidateId,
+        candidateName: candidate.name,
+        candidateEmail: candidate.email,
+        isFavorited,
+        favoritedAt: favorite?.createdAt || null,
+        favoritedId: favorite?.id || null
+      },
+      message: isFavorited 
+        ? "Candidato está no Banco de Talentos" 
+        : "Candidato não está no Banco de Talentos"
+    });
+
+  } catch (error) {
+    console.error("Erro ao verificar candidato favoritado:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro interno ao verificar candidato favoritado."
+    });
+  }
+}
+
 // Função para desfavoritar um candidato
 export async function unfavoriteCandidate(req: Request, res: Response): Promise<void> {
   try {
