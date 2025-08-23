@@ -30,6 +30,60 @@ export async function getAllOpportunities(
   }
 }
 
+export async function getRecentOpportunities(
+  req: Request,
+  res: Response
+): Promise<void> {
+  try {
+    const user = req.user as any;
+    const limit = parseInt(req.query.limit as string) || 3; // Padrão: 3 vagas
+    
+    // Candidatos só veem oportunidades ativas, RH vê todas
+    const whereCondition = user?.userType === "CANDIDATO" 
+      ? { isActive: true }
+      : {};
+
+    const recentOpportunities = await prisma.opportunity.findMany({
+      where: whereCondition,
+      include: {
+        company: {
+          select: { 
+            name: true, 
+            address: true,
+            logoUrl: true 
+          },
+        },
+        _count: {
+          select: {
+            responses: true // Conta quantas candidaturas tem
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit, // Limita o número de resultados
+    });
+
+    const formattedOpportunities = recentOpportunities.map(opp => ({
+      ...opp,
+      applicationsCount: opp._count.responses,
+      _count: undefined // Remove o campo _count da resposta
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedOpportunities,
+      total: formattedOpportunities.length,
+      message: `${formattedOpportunities.length} vagas mais recentes encontradas`
+    });
+  } catch (error) {
+    console.error("Erro ao buscar vagas recentes:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro interno ao buscar vagas recentes."
+    });
+  }
+}
+
 export async function getOpportunityById(
   req: Request,
   res: Response

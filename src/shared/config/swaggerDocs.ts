@@ -708,6 +708,104 @@
 
 /**
  * @swagger
+ * /opportunities/recent:
+ *   get:
+ *     tags: [Opportunities]
+ *     summary: Vagas mais recentes
+ *     description: Retorna as vagas mais recentes (padrão 3, máximo configurável)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 3
+ *           minimum: 1
+ *           maximum: 10
+ *         description: Número de vagas a retornar (padrão 3, máximo 10)
+ *     responses:
+ *       200:
+ *         description: Lista das vagas mais recentes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "cluid123"
+ *                       title:
+ *                         type: string
+ *                         example: "Desenvolvedor Full Stack"
+ *                       description:
+ *                         type: string
+ *                         example: "Oportunidade para desenvolvedor React/Node.js"
+ *                       location:
+ *                         type: string
+ *                         example: "São Paulo, SP"
+ *                       salary:
+ *                         type: string
+ *                         example: "R$ 8.000 - R$ 12.000"
+ *                       benefits:
+ *                         type: string
+ *                         example: "VR, VT, Plano de Saúde"
+ *                       requirements:
+ *                         type: string
+ *                         example: "React, Node.js, MongoDB"
+ *                       isActive:
+ *                         type: boolean
+ *                         example: true
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-08-22T10:30:00Z"
+ *                       company:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                             example: "TechCorp"
+ *                           address:
+ *                             type: string
+ *                             example: "São Paulo, SP"
+ *                           logoUrl:
+ *                             type: string
+ *                             example: "https://exemplo.com/logo.png"
+ *                       applicationsCount:
+ *                         type: number
+ *                         example: 15
+ *                         description: Número de candidaturas para esta vaga
+ *                 total:
+ *                   type: number
+ *                   example: 3
+ *                   description: Número total de vagas retornadas
+ *                 message:
+ *                   type: string
+ *                   example: "3 vagas mais recentes encontradas"
+ *       401:
+ *         description: Token de acesso inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Erro interno do servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+
+/**
+ * @swagger
  * /opportunities/my-applications:
  *   get:
  *     tags: [Opportunities]

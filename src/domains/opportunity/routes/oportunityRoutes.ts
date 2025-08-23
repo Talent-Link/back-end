@@ -2,6 +2,7 @@
 import { Router } from "express";
 import {
   getAllOpportunities,
+  getRecentOpportunities,
   getOpportunityById,
   getResponsesByOpportunity,
   getCandidatesByOpportunity,
@@ -22,6 +23,9 @@ const router = Router();
 
 // GET   /opportunities              → qualquer usuário autenticado
 router.get("/", ensureToken, getAllOpportunities);
+
+// GET   /opportunities/recent      → vagas mais recentes (padrão: 3, máximo configurável via query ?limit=5)
+router.get("/recent", ensureToken, getRecentOpportunities);
 
 // GET   /opportunities/my-applications → candidato vê suas candidaturas
 router.get("/my-applications", ensureToken, getUserOpportunities);
