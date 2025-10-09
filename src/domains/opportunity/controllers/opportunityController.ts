@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import prisma from "../../../shared/database/prisma";
-import { create } from "domain";
 
 export async function getAllOpportunities(
   req: Request,
@@ -18,7 +17,7 @@ export async function getAllOpportunities(
       where: whereCondition,
       include: {
         company: {
-          select: { name: true, address: true },
+          select: { name: true, address: true, logoUrl: true },
         },
       },
       orderBy: { createdAt: "desc" },
